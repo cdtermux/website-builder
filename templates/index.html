@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Builder</title>
+    <style>
+        /* Your existing styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        header {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 3em;
+            animation: fadeIn 2s ease-in-out;
+        }
+        textarea {
+            width: 80%;
+            max-width: 600px;
+            height: 150px;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: slideIn 1s ease-out;
+            margin-bottom: 20px;
+        }
+        button, a#view-link, button#update-button {
+            background-color: #ff7e5f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+        button:hover, a#view-link:hover, button#update-button:hover {
+            background-color: #feb47b;
+        }
+        a#view-link, button#update-button {
+            display: none;
+            animation: fadeIn 2s ease-in-out;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff7e5f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin-top: 20px;
+        }
+        #error-container {
+            display: none;
+            margin-top: 20px;
+            background-color: #fff;
+            border: 2px solid #ff7e5f;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            text-align: left;
+        }
+        #error-container h2 {
+            margin-top: 0;
+        }
+        #error-toggle {
+            cursor: pointer;
+            color: #ff7e5f;
+            text-decoration: underline;
+        }
+        .retry-icon, .reset-icon {
+            cursor: pointer;
+            display: none;
+            font-size: 1.2em;
+            margin-left: 10px;
+            color: #ff7e5f;
+            text-decoration: underline;
+        }
+        #update-input-container {
+            display: none;
+            margin-top: 20px;
+        }
+        #update-input {
+            width: 80%;
+            max-width: 600px;
+            height: 150px;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+        async function generateCode() {
+            const prompt = document.getElementById('prompt').value;
+            const loader = document.getElementById('loader');
+            const generateButton = document.getElementById('generate-button');
+            const viewLink = document.getElementById('view-link');
+            const errorContainer = document.getElementById('error-container');
+            const errorContent = document.getElementById('error-content');
+
+            generateButton.style.display = 'none';
+            loader.style.display = 'block';
+            errorContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loader.style.display = 'none';
+                    viewLink.href = `/view/${data.folder}/index.html`;
+                    viewLink.style.display = 'block';
+
+                    // Show update button after successful generation
+                    const updateButton = document.getElementById('update-button');
+                    updateButton.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'An unknown error occurred');
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                generateButton.style.display = 'block';
+                errorContainer.style.display = 'block';
+                errorContent.textContent = error.message;
+            }
+        }
+
+        async function retryGeneration() {
+            const prompt = document.getElementById('prompt').value;
+            const retryButton = document.getElementById('retry-button');
+            const loader = document.getElementById('loader');
+            const generateButton = document.getElementById('generate-button');
+            const viewLink = document.getElementById('view-link');
+            const errorContainer = document.getElementById('error-container');
+            const errorContent = document.getElementById('error-content');
+
+            retryButton.style.display = 'none';
+            loader.style.display = 'block';
+            errorContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/retry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (data.retry) {
+                    generateCode();
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                retryButton.style.display = 'block';
+                errorContainer.style.display = 'block';
+                errorContent.textContent = error.message;
+            }
+        }
+
+        function resetPrompt() {
+            const promptInput = document.getElementById('prompt');
+            promptInput.value = '';
+            const updateButton = document.getElementById('update-button');
+            updateButton.style.display = 'none';
+
+            // Clear chat history
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.style.display = 'none';
+        }
+
+        async function updateCode() {
+            const prompt = document.getElementById('prompt').value;
+            const loader = document.getElementById('loader');
+            const updateButton = document.getElementById('update-button');
+            const generateButton = document.getElementById('generate-button');
+            const viewLink = document.getElementById('view-link');
+            const errorContainer = document.getElementById('error-container');
+            const errorContent = document.getElementById('error-content');
+
+            updateButton.disabled = true;
+            loader.style.display = 'block';
+            errorContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loader.style.display = 'none';
+                    viewLink.href = `/view/${data.folder}/index.html`;
+                    viewLink.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'An unknown error occurred');
+                }
+            } catch (error) {
+                loader.style.display = 'none';
+                updateButton.disabled = false;
+                errorContainer.style.display = 'block';
+                errorContent.textContent = error.message;
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Website Builder</h1>
+    </header>
+    <textarea id="prompt" rows="10" cols="50" placeholder="Enter your prompt here"></textarea>
+    <br>
+    <button id="generate-button" onclick="generateCode()">Generate</button>
+    <button id="retry-button" style="display: none;" onclick="retryGeneration()">Retry</button>
+    <button onclick="resetPrompt()">Reset Prompt</button>
+    <div id="loader" class="loader"></div>
+    <br>
+    <a id="view-link" href="#" target="_blank">View Generated Website</a>
+    <button id="update-button" style="display: none;" onclick="updateCode()">Update</button>
+    <div id="error-container">
+        <h2>Error</h2>
+        <p id="error-content"></p>
+        <span id="error-toggle" onclick="toggleErrorDetails()">Toggle Details</span>
+    </div>
+</body>
+</html>
