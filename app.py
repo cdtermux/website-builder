@@ -1,14 +1,9 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory, url_for
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import os
 import random
 import string
 import re
 from g4f.client import Client
-from asyncio import WindowsSelectorEventLoopPolicy
-import asyncio
-
-# Set the event loop policy to WindowsSelectorEventLoopPolicy for compatibility with Windows
-asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 app = Flask(__name__)
 
@@ -101,7 +96,7 @@ def create_files(code_sections, folder_name):
 
 def regenerate_section(client, prompt):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content
@@ -111,6 +106,30 @@ def regenerate_section(client, prompt):
 def index():
     return render_template('index.html')
 
+# Function to enhance the prompt
+def enhance_prompt(prompt):
+    client = Client()
+    enhancement_prompt = prompt + ' enhance this prompt in 50 words, and provide the enhanced prompt like, your enhanced prompt is :'
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": enhancement_prompt}]
+    )
+    
+    response_content = response.choices[0].message.content
+    
+    # Extract the enhanced prompt
+    start_delimiter = "your enhanced prompt is :"
+    start_index = response_content.find(start_delimiter)
+    
+    if start_index != -1:
+        start_index += len(start_delimiter)
+        enhanced_prompt = response_content[start_index:].strip()
+    else:
+        enhanced_prompt = prompt  # Fallback to original prompt if extraction fails
+    
+    return enhanced_prompt
+
 # Function to regenerate code with a modified prompt
 def regenerate_code(prompt):
     client = Client()
@@ -118,7 +137,7 @@ def regenerate_code(prompt):
 
     while retry:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -135,10 +154,14 @@ def regenerate_code(prompt):
 @app.route('/generate', methods=['POST'])
 def generate():
     global code_generation_failures
-    prompt = request.json.get('prompt')
-    base_prompt = ''' Please create a complete web page using HTML, Tailwind CSS, and JavaScript. Ensure a modern, techy, and visually engaging layout with rich colors and a broad design. Use Tailwind CSS for styling with a linear gradient background and vibrant design elements. Include distinct sections (header, main content, footer) and multiple visible buttons with interactive functionalities. Implement JavaScript to add functionality to the buttons and use `localStorage` for data storage. Provide additional plain CSS for enhancements. Include the Tailwind CSS CDN link. Provide the complete HTML, CSS, and JavaScript code separately.'''
+    original_prompt = request.json.get('prompt')
+    
+    # Enhance the prompt
+    enhanced_prompt = enhance_prompt(original_prompt)
+    
+    base_prompt = ''' Please create a cutting-edge, visually stunning web page using HTML5, Tailwind CSS, and JavaScript. Ensure a futuristic, dark-mode design with animated gradients and parallax scrolling effects. Implement a responsive layout with distinct sections: a fixed header with frosted glass effect and animated SVG logo, an eye-catching hero section with 3D animations, multiple content sections showcasing various layouts and interactive elements, and a multi-column footer. Include advanced features like a live chat widget, dark mode toggle, infinite scrolling, and data visualizations using Chart.js. Integrate free APIs (e.g., REST Countries) for dynamic content. Add micro-interactions, custom animations, and a simple interactive game or puzzle. Ensure accessibility with ARIA attributes and semantic HTML. Use Tailwind CSS for primary styling, supplemented by custom CSS for enhanced effects. Include the Tailwind CSS CDN link. Implement modern JavaScript (ES6+) for functionality, including localStorage for user preferences. Optimize performance with lazy loading and efficient asset management. Provide high-quality SVGs, optimized images, and custom web fonts. Include detailed code comments and a README file. Please provide the complete, well-structured HTML, CSS (including Tailwind configurations), and JavaScript code separately, ensuring all external resources are properly linked and functional.'''
 
-    prompt += base_prompt
+    prompt = enhanced_prompt + base_prompt
 
     # Check if there have been more than 3 failures for the same page
     if prompt in code_generation_failures and code_generation_failures[prompt] >= 3:
