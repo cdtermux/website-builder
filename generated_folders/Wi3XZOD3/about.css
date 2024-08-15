@@ -1,0 +1,11 @@
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+h1, h2 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+button:hover {
+    transition: background-color 0.3s;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="skills.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+
+    <header class="p-6 text-center">
+        <h1 class="text-4xl font-bold">My Skills</h1>
+        <p class="mt-2">Showcasing my technical abilities and projects.</p>
+    </header>
+
+    <main class="p-6">
+        <section id="skills" class="mb-8">
+            <h2 class="text-3xl font-semibold">Technical Skills</h2>
+            <ul class="list-disc list-inside mt-4">
+                <li>HTML & CSS</li>
+                <li>JavaScript & React</li>
+                <li>Node.js & Express</li>
+                <li>Python & Django</li>
+                <li>Database Management (SQL & NoSQL)</li>
+            </ul>
+        </section>
+
+        <section id="projects" class="mb-8">
+            <h2 class="text-3xl font-semibold">Projects</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" id="project-gallery"></div>
+        </section>
+
+        <button id="saveButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Save Skills</button>
+        <button id="loadButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Load Skills</button>
+    </main>
+
+    <footer class="p-6 text-center">
+        <p>&copy; 2023 My Portfolio. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="skills.js"></script>
+</body>
+</html>

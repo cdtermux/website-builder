@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="contact.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+
+    <header class="p-5 text-center">
+        <h1 class="text-4xl font-bold">Contact Me</h1>
+        <p class="mt-2">I would love to hear from you!</p>
+    </header>
+
+    <main class="flex flex-col items-center justify-center p-5">
+        <form id="contact-form" class="bg-gray-800 p-8 rounded-lg shadow-lg">
+            <input type="text" id="name" placeholder="Your Name" class="p-2 mb-4 w-full rounded" required>
+            <input type="email" id="email" placeholder="Your Email" class="p-2 mb-4 w-full rounded" required>
+            <textarea id="message" placeholder="Your Message" class="p-2 mb-4 w-full rounded" required></textarea>
+            <button type="submit" class="bg-blue-600 p-3 rounded hover:bg-blue-700 transition">Send Message</button>
+        </form>
+
+        <div class="mt-8">
+            <h2 class="text-2xl font-semibold">Gallery</h2>
+            <div id="image-gallery" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4"></div>
+        </div>
+    </main>
+
+    <footer class="text-center p-5">
+        <p>&copy; 2023 Your Name. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="contact.js"></script>
+</body>
+</html>

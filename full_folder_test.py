@@ -7,6 +7,7 @@ from g4f.client import Client
 import threading
 import queue
 
+
 app = Flask(__name__)
 
 # Counter to track code generation failures
@@ -68,13 +69,12 @@ def create_files(code_sections, folder_name, page_name):
         else:
             html_content = f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n' + html_content
         
-        # Link the corresponding script file
-        if '<script src="' not in html_content:
-            body_tag_index = html_content.find('</body>')
-            if body_tag_index != -1:
-                html_content = html_content[:body_tag_index] + f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>\n' + html_content[body_tag_index:]
-            else:
-                html_content += f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>'
+        # Add the corresponding script file at the end of the body tag
+        body_tag_index = html_content.find('</body>')
+        if body_tag_index != -1:
+            html_content = html_content[:body_tag_index] + f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>\n' + html_content[body_tag_index:]
+        else:
+            html_content += f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>'
         
         html_file.write(html_content)
 
@@ -153,7 +153,44 @@ def generate():
     
     folder_name = generate_random_folder_name()
     
-    base_prompt = '''Please create a complete web page using HTML, Tailwind CSS, and JavaScript with a modern, techy, and visually engaging layout. The page should feature a linear gradient background, vibrant design elements, and a broad, visually appealing design. Include distinct sections such as a header, main content, and footer. Implement multiple visible buttons with interactive functionalities using JavaScript. Use `localStorage` to manage data storage. Fetch and display images from the Pexels API, with the API key stored in a `.env` [pixel_api_key] file, and include dummy content to fully populate the page. Ensure that the HTML includes the Tailwind CSS CDN link and provide separate HTML, CSS, and JavaScript code files.'''
+    base_prompt = base_prompt = '''Generate a complete, functional web page for a {page_name} page. The page should be modern, techy, and visually engaging. Use HTML5, Tailwind CSS (via CDN), and JavaScript. Include the following elements:
+
+1. HTML structure:
+   - DOCTYPE declaration
+   - <html> tag with lang attribute
+   - <head> section with appropriate meta tags, title, and Tailwind CSS CDN link
+   - <body> section with header, main content, and footer
+
+2. Header:
+   - Company logo or name
+   - Navigation menu with at least 3 items
+
+3. Main content:
+   - Relevant content for a {page_name} page
+   - Fetch and display at least one image from the Pexels API
+   - One or more interactive buttons (implement functionality in JavaScript)
+
+4. Footer:
+   - Copyright information
+   - Social media links (use placeholder #)
+
+5. Styling:
+   - Use Tailwind CSS classes for layout and design
+   - Implement a linear gradient background
+   - Use vibrant colors and modern design elements
+
+6. JavaScript:
+   - Implement interactivity for the buttons
+   - Use localStorage to store and retrieve at least one piece of information
+   - Fetch and display images from the Pexels API, with the API key stored in a `.env` file
+   - Include code to read the Pexels API key from the `.env` file (key name: PEXELS_API_KEY)
+
+7. Environment setup:
+   - get the Pexels API key from the .env file (PEXELS_API_KEY)
+
+Provide the complete code for the HTML file, a separate CSS file (if any custom styles are needed beyond Tailwind), and a separate JavaScript file. Ensure all three files are fully functional and properly linked.
+
+Remember to avoid Incomplete HTML or missing <div> tags, especially for the Pexels API integration and .env file usage. '''
 
     threads = []
     result_queue = queue.Queue()
@@ -302,7 +339,7 @@ def create_global_style(folder_name):
     with open(global_style_path, 'w', encoding='utf-8') as f:
         f.write(navbar_css)
 
-# Update navbar in all generated pages
+# Update navbar in all generated pages and link global-style.css
 def update_navbar(folder_name, pages):
     folder_path = os.path.join('generated_folders', folder_name)
     for filename in os.listdir(folder_path):
@@ -311,6 +348,7 @@ def update_navbar(folder_name, pages):
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
+            # Insert the navbar in the body
             new_navbar = '''
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid">
@@ -337,6 +375,13 @@ def update_navbar(folder_name, pages):
             </nav>
             '''
             
+            # Insert the global-style.css link in the <head> section
+            head_tag_index = content.find('</head>')
+            if head_tag_index != -1:
+                global_style_link = '<link rel="stylesheet" href="global-style.css">\n'
+                content = content[:head_tag_index] + global_style_link + content[head_tag_index:]
+            
+            # Insert the new navbar right after the opening <body> tag
             body_tag_index = content.find('<body')
             if body_tag_index != -1:
                 body_end_index = content.find('>', body_tag_index)
@@ -350,7 +395,12 @@ def update_navbar(folder_name, pages):
 @app.route('/generated_folders/<folder_name>/<path:filename>')
 def serve_generated_file(folder_name, filename):
     folder_path = os.path.join('generated_folders', folder_name)
-    return send_from_directory(folder_path, filename)
+    try:
+        return send_from_directory(folder_path, filename)
+    except FileNotFoundError:
+        # Return a 404 error if file is not found
+        return "File not found", 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)

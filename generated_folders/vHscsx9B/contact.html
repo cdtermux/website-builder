@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz's Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <header class="p-5 text-center">
+        <h1 class="text-4xl font-bold">Imtiyaz's Portfolio</h1>
+        <p class="mt-2">Web Developer | Tech Enthusiast</p>
+    </header>
+
+    <main class="container mx-auto p-5">
+        <section id="contact" class="mt-10">
+            <h2 class="text-3xl font-semibold">Contact Me</h2>
+            <form id="contactForm" class="mt-5">
+                <input type="text" id="name" placeholder="Your Name" class="p-2 w-full mb-4 rounded" required>
+                <input type="email" id="email" placeholder="Your Email" class="p-2 w-full mb-4 rounded" required>
+                <textarea id="message" placeholder="Your Message" class="p-2 w-full mb-4 rounded" required></textarea>
+                <button type="submit" class="bg-green-500 p-2 rounded hover:bg-green-600">Send Message</button>
+            </form>
+            <div id="responseMessage" class="mt-4"></div>
+        </section>
+
+        <section id="gallery" class="mt-10">
+            <h2 class="text-3xl font-semibold">Image Gallery</h2>
+            <div id="imageContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5"></div>
+        </section>
+    </main>
+
+    <footer class="text-center p-5">
+        <p>&copy; 2023 Imtiyaz. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

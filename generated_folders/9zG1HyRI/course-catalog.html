@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="course-catalog.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+            <nav class="navbar navbar-expand-lg"> ... </nav>
+            
+    <header class="p-5 text-center">
+        <h1 class="text-4xl font-bold">College Course Catalog</h1>
+        <p class="mt-2">Explore our diverse range of courses</p>
+    </header>
+    <main class="container mx-auto p-5">
+        <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Course cards will be injected here -->
+        </div>
+        <button id="load-more" class="mt-5 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded">
+            Load More Courses
+        </button>
+    </main>
+    <footer class="text-center p-5">
+        <p>&copy; 2023 College Portal. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+<script src="course-catalog.js"></script>
+</body>
+</html>

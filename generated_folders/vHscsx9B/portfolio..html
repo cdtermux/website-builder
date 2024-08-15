@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz's Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="script.js" defer></script>
+<link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-gradient-to-r from-blue-400 to-purple-500 text-white">
+    <header class="py-8 text-center">
+        <h1 class="text-4xl font-bold">Welcome to My Portfolio</h1>
+        <p class="mt-4 text-lg">I'm Imtiyaz, a passionate Web Developer.</p>
+    </header>
+    
+    <main class="p-6">
+        <section class="mt-10">
+            <h2 class="text-3xl font-semibold">My Projects</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4" id="project-gallery">
+                <!-- Images will be inserted here by JavaScript -->
+            </div>
+            <button id="showMore" class="mt-6 py-3 px-6 bg-white text-blue-500 font-semibold rounded shadow hover:bg-gray-200">Show More Projects</button>
+        </section>
+    </main>
+
+    <footer class="py-8 text-center bg-gray-800">
+        <p>© 2023 Imtiyaz - All Rights Reserved</p>
+    </footer>
+<script src="index.js"></script>
+</body>
+</html>

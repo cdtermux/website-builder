@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - College Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="about-us.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <nav class="navbar navbar-expand-lg"> ... </nav>
+            
+    <header class="py-8 text-center">
+        <h1 class="text-4xl font-bold">About Us</h1>
+        <p class="mt-2 text-lg">Discover our vision and values.</p>
+    </header>
+    
+    <main class="container mx-auto px-4">
+        <section class="my-10">
+            <h2 class="text-2xl font-semibold mb-4">Our Mission</h2>
+            <p class="mb-4">We strive to provide inclusive, high-quality education to empower students for a successful future.</p>
+            <button id="saveMission" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">Save Mission</button>
+            <button id="loadMission" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">Load Mission</button>
+            <div id="missionOutput" class="mt-4"></div>
+        </section>
+        
+        <section class="my-10">
+            <h2 class="text-2xl font-semibold mb-4">Our Values</h2>
+            <ul class="list-disc list-inside mb-4">
+                <li>Innovation</li>
+                <li>Diversity</li>
+                <li>Integrity</li>
+            </ul>
+            <button id="getImages" class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">Fetch Images</button>
+            <div id="imageGallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
+        </section>
+    </main>
+
+    <footer class="bg-blue-900 py-4 text-center">
+        <p>&copy; 2023 College Portal. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="about-us.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz's Resume</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="resume.css">
+</head>
+
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">Your Brand</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+            
+                            <li class="nav-item">
+                                <a class="nav-link" href="about.html">About</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="services.html">Services</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="gallery..html">Gallery.</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="skills.html">Skills</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="projects.html">Projects</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="testimonials.html">Testimonials</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="contact.html">Contact</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="resume.html">Resume</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="blog.html">Blog</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+    <header class="p-6 text-center">
+        <h1 class="text-4xl font-bold">Imtiyaz's Resume</h1>
+        <p class="mt-2 text-lg">Web Developer | Tech Enthusiast | Lifelong Learner</p>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <section class="mb-8">
+            <h2 class="text-3xl font-semibold mb-4">About Me</h2>
+            <p class="text-lg">
+                I am a passionate web developer with experience in creating dynamic and responsive web applications. I love to explore new technologies and improve my skills.
+            </p>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-3xl font-semibold mb-4">Skills</h2>
+            <ul class="list-disc list-inside">
+                <li>HTML, CSS, JavaScript</li>
+                <li>React, Vue.js</li>
+                <li>Node.js, Express</li>
+                <li>RESTful APIs and GraphQL</li>
+                <li>Responsive Design</li>
+            </ul>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-3xl font-semibold mb-4">Work Experience</h2>
+            <div>
+                <h3 class="text-xl font-bold">Web Developer at XYZ Company</h3>
+                <p>Jan 2021 - Present</p>
+                <p>Developing and maintaining web applications, collaborating with designers and backend developers.</p>
+            </div>
+        </section>
+
+        <section class="mb-8">
+            <h2 class="text-3xl font-semibold mb-4">Projects</h2>
+            <div id="project-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <button id="load-projects" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Load Projects
+            </button>
+        </section>
+    </main>
+
+    <footer class="p-6 text-center">
+        <p>&copy; 2023 Imtiyaz. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="resume.js"></script>
+</body>
+
+</html>

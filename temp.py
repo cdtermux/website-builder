@@ -96,7 +96,7 @@ def create_files(code_sections, folder_name):
 
 def regenerate_section(client, prompt):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content

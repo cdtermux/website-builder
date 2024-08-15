@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz's Portfolio - Resume</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <header class="p-6 text-center">
+        <h1 class="text-4xl font-bold">Imtiyaz's Resume</h1>
+        <p class="mt-2">Web Developer | Tech Enthusiast | Lifelong Learner</p>
+    </header>
+    <main class="container mx-auto p-6">
+        <section id="about" class="mb-8">
+            <h2 class="text-3xl font-semibold">About Me</h2>
+            <p class="mt-2">I am a passionate web developer with experience in building dynamic and responsive web applications.</p>
+        </section>
+        <section id="skills" class="mb-8">
+            <h2 class="text-3xl font-semibold">Skills</h2>
+            <ul class="list-disc list-inside mt-2">
+                <li>HTML, CSS, JavaScript</li>
+                <li>React, Node.js</li>
+                <li>Tailwind CSS, Bootstrap</li>
+            </ul>
+        </section>
+        <section id="projects" class="mb-8">
+            <h2 class="text-3xl font-semibold">Projects</h2>
+            <div id="project-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2"></div>
+            <button id="load-projects" class="mt-4 bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">Load Projects</button>
+        </section>
+    </main>
+    <footer class="p-6 text-center">
+        <p>&copy; 2023 Imtiyaz. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

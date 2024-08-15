@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz's Portfolio - Resume</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+<link rel="stylesheet" href="resume.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-sans">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">Your Brand</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+            
+                            <li class="nav-item">
+                                <a class="nav-link" href="blog.html">Blog</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="about.html">About</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="services.html">Services</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="skills.html">Skills</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="projects.html">Projects</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="contact.html">Contact</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="testimonials.html">Testimonials</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="resume.html">Resume</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="privacy-policy..html">Privacy Policy.</a>
+                            </li>
+                
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+    <header class="text-center p-10">
+        <h1 class="text-5xl font-bold">Imtiyaz Ahmed</h1>
+        <p class="text-xl">Web Developer | JavaScript Enthusiast</p>
+        <div class="mt-4">
+            <button id="btnFetchImages" class="bg-white text-blue-500 px-4 py-2 rounded-full m-2 hover:bg-blue-100">Fetch Images</button>
+            <button id="btnClearStorage" class="bg-red-500 px-4 py-2 rounded-full m-2 hover:bg-red-400">Clear Storage</button>
+        </div>
+    </header>
+    <main class="container mx-auto p-10">
+        <section id="resume" class="mb-10">
+            <h2 class="text-3xl font-semibold mb-4">Resume</h2>
+            <p>Here you'll find my skills, projects, and experience.</p>
+            <ul class="list-disc ml-5 mt-4">
+                <li>HTML, CSS, JavaScript</li>
+                <li>React, Tailwind CSS</li>
+                <li>Node.js, Express</li>
+                <li>Responsive Web Design</li>
+            </ul>
+        </section>
+        <section id="imageGallery">
+            <h2 class="text-3xl font-semibold mb-4">Gallery</h2>
+            <div class="grid grid-cols-3 gap-4" id="galleryContainer"></div>
+        </section>
+    </main>
+    <footer class="text-center p-5">
+        <p>&copy; 2023 Imtiyaz Ahmed. All rights reserved.</p>
+    </footer>
+<script src="resume.js"></script>
+</body>
+</html>

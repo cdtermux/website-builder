@@ -1,0 +1,22 @@
+/* styles.css */
+
+/* Custom styles beyond Tailwind */
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+button {
+    margin: 10px;
+}
+
+#image {
+    width: 50%;
+    height: auto;
+    margin: 20px auto;
+}

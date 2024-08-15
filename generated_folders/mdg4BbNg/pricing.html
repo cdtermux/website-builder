@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Suhelroadlines Transport</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="script.js" defer></script>
+<link rel="stylesheet" href="pricing.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-green-500 text-white">
+
+    <header class="p-6">
+        <h1 class="text-3xl font-bold text-center">Suhelroadlines Transport</h1>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-center mb-4">Our Pricing Plans</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white text-black p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">Basic Plan</h3>
+                    <p class="mb-4">Perfect for small shipments.</p>
+                    <span class="text-2xl font-bold">$99</span>
+                    <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="addToCart('Basic Plan', 99)">Add to Cart</button>
+                </div>
+                <div class="bg-white text-black p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">Standard Plan</h3>
+                    <p class="mb-4">Ideal for medium shipments.</p>
+                    <span class="text-2xl font-bold">$199</span>
+                    <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="addToCart('Standard Plan', 199)">Add to Cart</button>
+                </div>
+                <div class="bg-white text-black p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">Premium Plan</h3>
+                    <p class="mb-4">Best for large shipments.</p>
+                    <span class="text-2xl font-bold">$299</span>
+                    <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="addToCart('Premium Plan', 299)">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="image-gallery" class="mb-12">
+            <h2 class="text-2xl font-semibold text-center mb-4">Image Gallery</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Images will be inserted here by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="p-6 text-center">
+        <p>&copy; 2023 Suhelroadlines Transport. All rights reserved.</p>
+    </footer>
+
+<script src="pricing.js"></script>
+</body>
+</html>

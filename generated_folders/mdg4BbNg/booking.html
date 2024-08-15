@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suhelroadlines Transport - Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600">
+    <header class="text-white p-5">
+        <h1 class="text-3xl font-bold text-center">Suhelroadlines Transport</h1>
+        <nav class="flex justify-center space-x-6 mt-4">
+            <a href="#booking" class="hover:underline">Booking</a>
+            <a href="#about" class="hover:underline">About Us</a>
+            <a href="#contact" class="hover:underline">Contact</a>
+        </nav>
+    </header>
+
+    <main class="flex flex-col items-center text-white p-10">
+        <section id="booking" class="w-full max-w-2xl bg-white rounded-lg shadow-lg p-5">
+            <h2 class="text-2xl font-semibold text-center mb-4">Book Your Ride</h2>
+            <form id="bookingForm" class="space-y-4">
+                <input type="text" id="name" placeholder="Your Name" class="w-full p-2 border rounded" required>
+                <input type="email" id="email" placeholder="Your Email" class="w-full p-2 border rounded" required>
+                <input type="text" id="destination" placeholder="Destination" class="w-full p-2 border rounded" required>
+                <input type="date" id="date" class="w-full p-2 border rounded" required>
+                <button type="submit" class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 w-full">Book Now</button>
+            </form>
+            <div id="confirmation" class="mt-5 hidden text-center">
+                <p class="text-green-500">Booking confirmed! Thank you.</p>
+            </div>
+        </section>
+
+        <section id="gallery" class="mt-10 w-full max-w-2xl">
+            <h2 class="text-2xl font-semibold text-center mb-4">Gallery</h2>
+            <div id="images" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+    </main>
+
+    <footer class="text-white text-center p-5">
+        <p>&copy; 2023 Suhelroadlines Transport. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="booking.js"></script>
+</body>
+</html>
