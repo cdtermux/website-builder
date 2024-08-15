@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suhelroadlines Transport - Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="services.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-green-500">
+    <header class="p-5 text-white text-center">
+        <h1 class="text-4xl font-bold">Suhelroadlines Transport Services</h1>
+        <p class="mt-2">Your trusted partner in logistics and transportation.</p>
+    </header>
+
+    <main class="container mx-auto my-10">
+        <section class="text-center">
+            <h2 class="text-3xl font-semibold text-white">Our Services</h2>
+            <p class="mt-4 text-lg text-gray-200">We provide a wide range of transportation services tailored to your needs.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white p-5 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold">Freight Transport</h3>
+                    <p class="mt-2">Reliable freight transport solutions for your business.</p>
+                    <button onclick="storeService('Freight Transport')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Learn More</button>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold">Logistics Management</h3>
+                    <p class="mt-2">Comprehensive logistics management services.</p>
+                    <button onclick="storeService('Logistics Management')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Learn More</button>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold">Warehousing Solutions</h3>
+                    <p class="mt-2">Secure and efficient warehousing solutions.</p>
+                    <button onclick="storeService('Warehousing Solutions')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-10">
+            <h2 class="text-3xl font-semibold text-white text-center">Gallery</h2>
+            <div id="gallery" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8"></div>
+        </section>
+    </main>
+
+    <footer class="text-center p-5 bg-gray-800 text-white">
+        <p>&copy; 2023 Suhelroadlines Transport. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="services.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me | Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="about.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+    <header class="py-10 text-center">
+        <h1 class="text-5xl font-bold">About Me</h1>
+        <p class="mt-4 text-lg">Welcome to my portfolio! Here you can learn more about my work and interests.</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-6">
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">Who I Am</h2>
+            <p class="mt-2">I am a passionate developer with a love for creating innovative solutions. My journey in tech has led me to explore various fields, including web development, AI, and more.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">My Skills</h2>
+            <ul class="mt-2 list-disc list-inside">
+                <li>JavaScript</li>
+                <li>React</li>
+                <li>Node.js</li>
+                <li>HTML & CSS</li>
+            </ul>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">My Work</h2>
+            <div id="image-gallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
+            <button id="load-images" class="mt-4 bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded">Load Images</button>
+        </section>
+    </main>
+
+    <footer class="py-6 text-center">
+        <p>&copy; 2023 My Portfolio. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="about.js"></script>
+</body>
+</html>

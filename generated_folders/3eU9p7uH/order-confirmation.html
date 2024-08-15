@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="order-confirmation.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+    <header class="p-6 text-center">
+        <h1 class="text-4xl font-bold">Thank You for Your Order!</h1>
+    </header>
+    <main class="container mx-auto p-6">
+        <section class="bg-white text-black rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Order Summary</h2>
+            <div id="order-details" class="mb-4"></div>
+            <button id="view-products" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View Products</button>
+            <button id="continue-shopping" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Continue Shopping</button>
+        </section>
+        <section class="mt-6">
+            <h2 class="text-2xl font-semibold mb-4">Inspiration for You</h2>
+            <div id="image-gallery" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </section>
+    </main>
+    <footer class="text-center p-6">
+        <p>&copy; 2023 Your E-Commerce Site. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+<script src="order-confirmation.js"></script>
+</body>
+</html>

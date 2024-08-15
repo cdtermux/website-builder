@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imtiyaz - About Me</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+
+    <header class="py-6 text-center">
+        <h1 class="text-4xl font-bold">About Me</h1>
+        <p class="mt-2">Welcome to my personal portfolio!</p>
+    </header>
+
+    <main class="container mx-auto px-4">
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold">Who Am I?</h2>
+            <p class="mt-4">I'm Imtiyaz, a passionate web developer with a love for creating dynamic and responsive web applications. I enjoy working with modern technologies to build efficient and user-friendly websites.</p>
+        </section>
+
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold">My Skills</h2>
+            <ul class="list-disc list-inside mt-4">
+                <li>JavaScript</li>
+                <li>HTML & CSS</li>
+                <li>React.js</li>
+                <li>Node.js</li>
+                <li>Tailwind CSS</li>
+            </ul>
+        </section>
+
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold">Images from Pexels</h2>
+            <div id="image-gallery" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4"></div>
+            <button id="fetchImages" class="mt-4 px-4 py-2 bg-purple-700 rounded hover:bg-purple-800">Fetch Images</button>
+        </section>
+
+        <section class="my-8">
+            <button id="saveInfo" class="px-4 py-2 bg-green-600 rounded hover:bg-green-700">Save My Info</button>
+            <button id="loadInfo" class="ml-4 px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700">Load My Info</button>
+        </section>
+    </main>
+
+    <footer class="py-6 text-center">
+        <p>&copy; 2023 Imtiyaz - All Rights Reserved</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

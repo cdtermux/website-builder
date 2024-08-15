@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>Admissions Page</title>
+<link rel="stylesheet" href="admissions.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <nav class="navbar navbar-expand-lg"> ... </nav>
+            
+    <header class="text-center py-10">
+        <h1 class="text-4xl font-bold">College Admissions Portal</h1>
+        <p class="mt-2">Your journey to success starts here!</p>
+    </header>
+    
+    <main class="container mx-auto my-5">
+        <section class="mb-10">
+            <h2 class="text-2xl font-semibold">Discover Our Programs</h2>
+            <p class="mt-2">Explore various programs we offer. Your future starts now!</p>
+            <div class="flex flex-wrap justify-center mt-5" id="programs">
+                <!-- Program buttons will be injected here -->
+            </div>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-2xl font-semibold">Gallery</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5" id="gallery">
+                <!-- Images from Pexels API will be displayed here -->
+            </div>
+        </section>
+
+        <section class="text-center">
+            <h2 class="text-2xl font-semibold">Stay Connected</h2>
+            <button id="subscribe" class="mt-5 bg-green-500 hover:bg-green-600 py-2 px-4 rounded-lg">
+                Subscribe for Updates
+            </button>
+        </section>
+    </main>
+
+    <footer class="text-center py-4">
+        <p>&copy; 2023 College Admissions. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="admissions.js"></script>
+</body>
+</html>

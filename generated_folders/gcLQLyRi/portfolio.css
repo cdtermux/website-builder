@@ -1,0 +1,23 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#image-container {
+    width: 100%;
+    height: 200px;
+    background-image: url('https://picsum.photos/200/300');
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#fetch-image-btn, #save-data-btn {
+    margin-right: 10px;
+}
+
+#save-data-btn {
+    margin-left: 10px;
+}

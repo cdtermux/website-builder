@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Website</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-green-500 text-white">
+
+    <header class="text-center py-8">
+        <h1 class="text-4xl font-bold">Tech Store</h1>
+        <p>Your one-stop shop for the latest gadgets!</p>
+    </header>
+
+    <main class="container mx-auto py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold">Gadget A</h2>
+                <p class="mt-2">Price: $299</p>
+                <button class="add-to-cart bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4" data-product="Gadget A" data-price="299">Add to Cart</button>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold">Gadget B</h2>
+                <p class="mt-2">Price: $499</p>
+                <button class="add-to-cart bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4" data-product="Gadget B" data-price="499">Add to Cart</button>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-xl font-semibold">Gadget C</h2>
+                <p class="mt-2">Price: $199</p>
+                <button class="add-to-cart bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4" data-product="Gadget C" data-price="199">Add to Cart</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-8">
+        <p>© 2023 Tech Store. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

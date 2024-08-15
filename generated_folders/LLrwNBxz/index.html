@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="global-style.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">Your Brand</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+            
+                            <li class="nav-item">
+                                <a class="nav-link" href="skills.html">Skills</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="faqs..html">FAQs.</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="contact.html">Contact</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="services.html">Services</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="about-me.html">About Me</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="testimonials.html">Testimonials</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="blog.html">Blog</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="portfolio.html">Portfolio</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                
+                            <li class="nav-item">
+                                <a class="nav-link" href="resume.html">Resume</a>
+                            </li>
+                
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+    <header class="p-5">
+        <h1 class="text-4xl font-bold text-center">Welcome to My Portfolio</h1>
+        <nav class="flex justify-center space-x-4 mt-4">
+            <button id="home-btn" class="bg-white text-blue-500 px-4 py-2 rounded">Home</button>
+            <button id="about-btn" class="bg-white text-blue-500 px-4 py-2 rounded">About Me</button>
+            <button id="projects-btn" class="bg-white text-blue-500 px-4 py-2 rounded">Projects</button>
+        </nav>
+    </header>
+    
+    <main class="container mx-auto mt-10">
+        <section id="content" class="text-center">
+            <h2 class="text-3xl mb-4">My Work</h2>
+            <div id="image-gallery" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Images from Pexels will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-10 text-center">
+        <p>&copy; 2023 My Portfolio. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="home.js"></script>
+</body>
+</html>

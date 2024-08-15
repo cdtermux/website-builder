@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="resume.css">
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+    <header class="p-5 text-center">
+        <h1 class="text-4xl font-bold">My Resume</h1>
+    </header>
+    
+    <main class="container mx-auto p-5">
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">About Me</h2>
+            <p class="mt-2">I am a software developer with a passion for creating innovative solutions.</p>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">Skills</h2>
+            <ul class="list-disc list-inside mt-2">
+                <li>JavaScript</li>
+                <li>HTML & CSS</li>
+                <li>React</li>
+                <li>Node.js</li>
+            </ul>
+        </section>
+
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold">Projects</h2>
+            <div id="projects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2"></div>
+        </section>
+
+        <button id="saveButton" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded">
+            Save Data
+        </button>
+        <button id="loadButton" class="bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-4 rounded ml-2">
+            Load Data
+        </button>
+    </main>
+
+    <footer class="p-5 text-center">
+        <p>&copy; 2023 My Portfolio</p>
+    </footer>
+
+    <script src="script.js"></script>
+<script src="resume.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/* Additional custom styles can be added here */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+button {
+    transition: background-color 0.3s ease;
+}

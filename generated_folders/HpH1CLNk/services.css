@@ -1,0 +1,7 @@
+/* styles.css */
+
+/* Custom styles beyond Tailwind */
+.image-container {
+    max-width: 400px;
+    margin: 40px auto;
+}
