@@ -41,10 +41,6 @@ def extract_code_sections(response):
 def is_complete_html(html_content):
     return re.search(r'<html[^>]*>', html_content, re.IGNORECASE) and re.search(r'</html>', html_content, re.IGNORECASE)
 
-# Function to check if the CSS content is present
-def is_css_present(css_content):
-    return bool(css_content.strip())
-
 # Function to check if the JS content is present
 def is_js_present(js_content):
     return bool(js_content.strip())
@@ -56,40 +52,43 @@ def contains_div_tags(html_content):
 # Function to handle the creation and regeneration of files
 def create_files(code_sections, folder_name, page_name):
     folder_path = os.path.join('generated_folders', folder_name)
-    
     os.makedirs(folder_path, exist_ok=True)
     
+    # Format the page file name
     file_name = 'index.html' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.html"
     
+    # Save HTML file
     with open(os.path.join(folder_path, file_name), 'w', encoding='utf-8') as html_file:
         html_content = code_sections["html"]
         
         head_tag_index = html_content.find('</head>')
         if head_tag_index != -1:
-            if '<link rel="stylesheet" href="styles.css">' not in html_content:
-                html_content = html_content[:head_tag_index] + '<link rel="stylesheet" href="styles.css">\n' + html_content[head_tag_index:]
-            if '<link rel="stylesheet" href="global-style.css">' not in html_content:
-                html_content = html_content[:head_tag_index] + '<link rel="stylesheet" href="global-style.css">\n' + html_content[head_tag_index:]
+            # Link specific page styles
+            html_content = html_content[:head_tag_index] + f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n' + html_content[head_tag_index:]
         else:
-            html_content = '<link rel="stylesheet" href="styles.css">\n<link rel="stylesheet" href="global-style.css">\n' + html_content
+            html_content = f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n' + html_content
         
-        if '<script src="script.js"></script>' not in html_content:
+        # Link the corresponding script file
+        if '<script src="' not in html_content:
             body_tag_index = html_content.find('</body>')
             if body_tag_index != -1:
-                html_content = html_content[:body_tag_index] + '<script src="script.js"></script>\n' + html_content[body_tag_index:]
+                html_content = html_content[:body_tag_index] + f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>\n' + html_content[body_tag_index:]
             else:
-                html_content += '<script src="script.js"></script>'
+                html_content += f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>'
         
         html_file.write(html_content)
-    
-    # Append CSS content to styles.css
-    with open(os.path.join(folder_path, 'styles.css'), 'a', encoding='utf-8') as css_file:
+
+    # Save CSS to a page-specific file
+    with open(os.path.join(folder_path, f'{page_name.lower().replace(" ", "-")}.css'), 'w', encoding='utf-8') as css_file:
         css_file.write(code_sections["css"])
     
-    # Append JavaScript content to script.js
-    with open(os.path.join(folder_path, 'script.js'), 'a', encoding='utf-8') as js_file:
+    # Save JS to a page-specific file
+    with open(os.path.join(folder_path, f'{page_name.lower().replace(" ", "-")}.js'), 'w', encoding='utf-8') as js_file:
         js_file.write(code_sections["js"])
 
+    print(f'Page {page_name} generated successfully.')
+
+# Function to regenerate the code
 def regenerate_code(prompt):
     client = Client()
     retry = True
@@ -109,6 +108,7 @@ def regenerate_code(prompt):
 
     return response_content
 
+# Function to generate a page
 def generate_page(page, original_prompt, base_prompt, folder_name, result_queue):
     prompt = f"{original_prompt} - {page} page: {base_prompt}"
     
@@ -120,10 +120,6 @@ def generate_page(page, original_prompt, base_prompt, folder_name, result_queue)
             print(f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating...")
             continue
 
-        if not is_css_present(code_sections["css"]):
-            print(f"Missing CSS detected for {page}. Regenerating...")
-            continue
-
         if not is_js_present(code_sections["js"]):
             print(f"Missing JavaScript detected for {page}. Regenerating...")
             continue
@@ -133,10 +129,12 @@ def generate_page(page, original_prompt, base_prompt, folder_name, result_queue)
     create_files(code_sections, folder_name, page)
     result_queue.put(page)
 
+# Index route
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Generate pages route
 @app.route('/generate', methods=['POST'])
 def generate():
     global code_generation_failures
@@ -145,17 +143,17 @@ def generate():
     client = Client()
     
     # Get the list of pages
-    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string:  the response have to be like ' the minimun requires pages are : ..."
+    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string: the response has to be like 'the minimum required pages are: ...'"
     pages_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": pages_prompt}]
     )
-    print(pages_response)
+    
     pages = [page.strip() for page in pages_response.choices[0].message.content.split(':')[1].split(',')]
     
     folder_name = generate_random_folder_name()
     
-    base_prompt = ''' Please create a complete web page using HTML, Tailwind CSS, and JavaScript with a modern, techy, and visually engaging layout. The page should feature a linear gradient background, vibrant design elements, and a broad, visually appealing design. Include distinct sections such as a header, main content, and footer. Implement multiple visible buttons with interactive functionalities using JavaScript. Use `localStorage` to manage data storage. Fetch and display images from the Pexels API, with the API key stored in a `.env` [pixel_api_key] file, and include dummy content to fully populate the page. Ensure that the HTML includes the Tailwind CSS CDN link and provide separate HTML, CSS, and JavaScript code files.'''
+    base_prompt = '''Please create a complete web page using HTML, Tailwind CSS, and JavaScript with a modern, techy, and visually engaging layout. The page should feature a linear gradient background, vibrant design elements, and a broad, visually appealing design. Include distinct sections such as a header, main content, and footer. Implement multiple visible buttons with interactive functionalities using JavaScript. Use `localStorage` to manage data storage. Fetch and display images from the Pexels API, with the API key stored in a `.env` [pixel_api_key] file, and include dummy content to fully populate the page. Ensure that the HTML includes the Tailwind CSS CDN link and provide separate HTML, CSS, and JavaScript code files.'''
 
     threads = []
     result_queue = queue.Queue()
@@ -165,7 +163,6 @@ def generate():
         thread.start()
         threads.append(thread)
 
-    # Wait for all threads to complete
     for thread in threads:
         thread.join()
 
@@ -174,24 +171,19 @@ def generate():
     while not result_queue.empty():
         generated_pages.append(result_queue.get())
 
-    # Create global-style.css with navbar styles
     create_global_style(folder_name)
-
-    # Update navbar in all HTML files
     update_navbar(folder_name, generated_pages)
 
     return jsonify({"folder": folder_name})
 
+# Create global style for navbar
 def create_global_style(folder_name):
     folder_path = os.path.join('generated_folders', folder_name)
     global_style_path = os.path.join(folder_path, 'global-style.css')
-    # Define the path for the .env file
+    
     env_path = os.path.join(folder_path, '.env')
-
-# Define the API key
     pixel_api_key = 'yqbAXj60yoBMJ7uOaBENAdPhcvnNyiUYIen5n0yuqPIhl3J8T9NLSjqC'
-
-# Create the .env file and write the API key to it
+    
     with open(env_path, 'w') as env_file:
         env_file.write(f'PIXELS_API_KEY={pixel_api_key}\n')
 
@@ -310,6 +302,7 @@ def create_global_style(folder_name):
     with open(global_style_path, 'w', encoding='utf-8') as f:
         f.write(navbar_css)
 
+# Update navbar in all generated pages
 def update_navbar(folder_name, pages):
     folder_path = os.path.join('generated_folders', folder_name)
     for filename in os.listdir(folder_path):
@@ -343,48 +336,21 @@ def update_navbar(folder_name, pages):
                 </div>
             </nav>
             '''
-
-            # Replace existing navbar or add new navbar after <body> tag
+            
             body_tag_index = content.find('<body')
             if body_tag_index != -1:
-                # Find the end of the <body> tag
                 body_end_index = content.find('>', body_tag_index)
                 if body_end_index != -1:
-                    content = content[:body_end_index+1] + new_navbar + content[body_end_index+1:]
-            else:
-                # If <body> tag is not found, just prepend the navbar to the content
-                content = new_navbar + content
+                    content = content[:body_end_index + 1] + new_navbar + content[body_end_index + 1:]
 
             with open(file_path, 'w', encoding='utf-8') as file:
                 file.write(content)
 
-@app.route('/view/<folder>/<path:filename>')
-def view(folder, filename):
-    return send_from_directory(os.path.join('generated_folders', folder), filename)
+# Serve generated files route
+@app.route('/generated_folders/<folder_name>/<path:filename>')
+def serve_generated_file(folder_name, filename):
+    folder_path = os.path.join('generated_folders', folder_name)
+    return send_from_directory(folder_path, filename)
 
-@app.route('/retry', methods=['POST'])
-def retry_generation():
-    global code_generation_failures
-    prompt = request.json.get('prompt')
-
-    if prompt in code_generation_failures:
-        code_generation_failures[prompt] += 1
-    else:
-        code_generation_failures[prompt] = 1
-
-    return jsonify({"retry": True})
-
-@app.route('/<path:filename>.html')
-def static_page(filename):
-    return render_template(f'{filename}.html')
-
-def freeze_config(app):
-    @app.route('/index.html')
-    def frozen_index():
-        return render_template('index.html')
-
-def main():
+if __name__ == '__main__':
     app.run(debug=True)
-
-if __name__ == "__main__":
-    main()
