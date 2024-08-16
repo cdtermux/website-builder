@@ -159,28 +159,7 @@ def generate():
     # Enhance the prompt
     enhanced_prompt = enhance_prompt(original_prompt)
     
-    base_prompt = '''*Objective:*  
-Create a modern, high-performance web page using HTML5, Tailwind CSS (via CDN), and modern JavaScript (ES6+). The design should be futuristic with dark mode, animated gradients, and parallax scrolling.
-
-### *HTML Structure & Design*
-- Use semantic HTML5 elements with proper meta tags for SEO and mobile optimization.
-- Implement a responsive, sticky header with smooth scroll and a dynamic navigation menu.
-- Design a hero section with 3D/parallax effects and API-driven content.
-- Include a multi-column footer with social links, a contact form, and legal compliance features.
-- Ensure lazy loading for images, structured data for SEO, and a favicon.
-
-### *JavaScript & Functionality*
-- Implement interactive elements and state management (e.g., dark mode toggle) using localStorage.
-- Use GraphQL for optimized data fetching and integrate custom web components.
-- Suggest SSR for better performance and accessibility, with a focus on PWAs and error monitoring.
-
-### *Performance & Accessibility*
-- Optimize assets, lazy load content, and implement a Service Worker for caching.
-- Ensure compliance with WCAG 2.1 accessibility standards and optimize fonts and images.
-
-### *Code Quality & Deployment*
-- Write modular, well-documented code, with automated tools like ESLint and Prettier.
-- Set up CI/CD pipelines for testing and deployment, with Git best practices.'''
+    base_prompt = ''' Please create a cutting-edge, visually stunning web page using HTML5, Tailwind CSS, and JavaScript. Ensure a futuristic, dark-mode design with animated gradients and parallax scrolling effects. Implement a responsive layout with distinct sections: a fixed header with frosted glass effect and animated SVG logo, an eye-catching hero section with 3D animations, multiple content sections showcasing various layouts and interactive elements, and a multi-column footer. Include advanced features like a live chat widget, dark mode toggle, infinite scrolling, and data visualizations using Chart.js. Integrate free APIs (e.g., REST Countries) for dynamic content. Add micro-interactions, custom animations, and a simple interactive game or puzzle. Ensure accessibility with ARIA attributes and semantic HTML. Use Tailwind CSS for primary styling, supplemented by custom CSS for enhanced effects. Include the Tailwind CSS CDN link. Implement modern JavaScript (ES6+) for functionality, including localStorage for user preferences. Optimize performance with lazy loading and efficient asset management. Provide high-quality SVGs, optimized images, and custom web fonts. Include detailed code comments and a README file. Please provide the complete, well-structured HTML, CSS (including Tailwind configurations), and JavaScript code separately, ensuring all external resources are properly linked and functional.'''
 
     prompt = enhanced_prompt + base_prompt
 
