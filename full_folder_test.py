@@ -7,7 +7,6 @@ from g4f.client import Client
 import threading
 import queue
 
-
 app = Flask(__name__)
 
 # Counter to track code generation failures
@@ -64,10 +63,10 @@ def create_files(code_sections, folder_name, page_name):
         
         head_tag_index = html_content.find('</head>')
         if head_tag_index != -1:
-            # Link specific page styles
-            html_content = html_content[:head_tag_index] + f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n' + html_content[head_tag_index:]
+            # Link specific page styles and global styles
+            html_content = html_content[:head_tag_index] + f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n<link rel="stylesheet" href="global-style.css">\n' + html_content[head_tag_index:]
         else:
-            html_content = f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n' + html_content
+            html_content = f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n<link rel="stylesheet" href="global-style.css">\n' + html_content
         
         # Add the corresponding script file at the end of the body tag
         body_tag_index = html_content.find('</body>')
@@ -79,11 +78,13 @@ def create_files(code_sections, folder_name, page_name):
         html_file.write(html_content)
 
     # Save CSS to a page-specific file
-    with open(os.path.join(folder_path, f'{page_name.lower().replace(" ", "-")}.css'), 'w', encoding='utf-8') as css_file:
+    css_filename = 'home.css' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.css"
+    with open(os.path.join(folder_path, css_filename), 'w', encoding='utf-8') as css_file:
         css_file.write(code_sections["css"])
     
     # Save JS to a page-specific file
-    with open(os.path.join(folder_path, f'{page_name.lower().replace(" ", "-")}.js'), 'w', encoding='utf-8') as js_file:
+    js_filename = 'home.js' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.js"
+    with open(os.path.join(folder_path, js_filename), 'w', encoding='utf-8') as js_file:
         js_file.write(code_sections["js"])
 
     print(f'Page {page_name} generated successfully.')
@@ -120,16 +121,67 @@ def generate_page(page, original_prompt, base_prompt, folder_name, result_queue)
             print(f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating...")
             continue
 
-        if not is_js_present(code_sections["js"]):
-            print(f"Missing JavaScript detected for {page}. Regenerating...")
-            continue
-
         break
 
     create_files(code_sections, folder_name, page)
     result_queue.put(page)
 
-# Index route
+# New function to generate custom navbar
+def generate_custom_navbar(pages):
+    client = Client()
+    
+    navbar_prompt = f"""Create a fully responsive, accessible navbar using Tailwind CSS that includes links to the following pages: {', '.join(pages)}, ensuring each link uses its exact .html extension without any modification to the page names. The navbar should be wrapped in a <nav> tag and use semantic HTML elements like ul, li, and a to ensure proper structure and accessibility. It should feature a logo and a mobile-friendly hamburger menu for smaller screens, which collapses and expands smoothly with JavaScript. Use Tailwind CSS classes to style the navbar, prioritizing responsiveness and visual consistency across all screen sizes. The design should include appropriate ARIA attributes, such as aria-expanded and aria-controls, to ensure the mobile menu is fully accessible. Add hover, focus, and active states to the interactive elements, making sure keyboard navigation is intuitive and clear. The navbar should be visually engaging, potentially featuring a shadow or fixed-top design, and the HTML should be production-ready with clean, optimized code."""
+
+    while True:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": navbar_prompt}]
+        )
+
+        response_content = response.choices[0].message.content
+
+        # Extract the navbar HTML
+        nav_pattern = re.compile(r'<nav.*?>(.*?)</nav>', re.DOTALL)
+        nav_match = nav_pattern.search(response_content)
+
+        if nav_match:
+            navbar_html = nav_match.group(0)  # This includes the <nav> tags
+            
+            # Replace generic page names with the correct file names
+            for page in pages:
+                file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
+                navbar_html = navbar_html.replace(f'href="{page.lower()}.html"', f'href="{file_name}"')
+                navbar_html = navbar_html.replace(f'href="{page}.html"', f'href="{file_name}"')
+            
+            return navbar_html
+        else:
+            print("Navbar not found in the generated content. Retrying...")
+
+    return ""  # Return an empty string if no navbar is generated after multiple attempts
+# Function to update HTML files with the custom navbar
+def update_html_with_navbar(folder_name, pages):
+    folder_path = os.path.join('generated_folders', folder_name)
+    navbar_html = generate_custom_navbar(pages)
+    
+    for page in pages:
+        file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
+        file_path = os.path.join(folder_path, file_name)
+        
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        # Insert navbar after the <body> tag
+        body_tag_index = content.find('<body')
+        if body_tag_index != -1:
+            closing_bracket_index = content.find('>', body_tag_index)
+            if closing_bracket_index != -1:
+                updated_content = content[:closing_bracket_index + 1] + '\n' + navbar_html + content[closing_bracket_index + 1:]
+                
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(updated_content)
+        
+        print(f"Updated {file_name} with custom navbar.")
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -153,254 +205,110 @@ def generate():
     
     folder_name = generate_random_folder_name()
     
-    base_prompt = base_prompt = '''Generate a complete, functional web page for a {page_name} page. The page should be modern, techy, and visually engaging. Use HTML5, Tailwind CSS (via CDN), and JavaScript. Include the following elements:
+    base_prompt = '''Generate a complete, production-ready web page for a {page_name} using modern web development best practices. The page should be visually striking, highly functional, and optimized for performance and SEO. Utilize HTML5, Tailwind CSS (via CDN), custom CSS for enhancements, and JavaScript (ES6+). Include the following elements:
 
-1. HTML structure:
-   - DOCTYPE declaration
-   - <html> tag with lang attribute
-   - <head> section with appropriate meta tags, title, and Tailwind CSS CDN link
-   - <body> section with header, main content, and footer
+HTML Structure:
 
-2. Header:
-   - Company logo or name
-   - Navigation menu with at least 3 items
+Use semantic HTML5 tags for improved accessibility and SEO
+Implement proper document structure with appropriate meta tags
+Include a responsive viewport meta tag
 
-3. Main content:
-   - Relevant content for a {page_name} page
-   - Fetch and display at least one image from the Pexels API
-   - One or more interactive buttons (implement functionality in JavaScript)
 
-4. Footer:
-   - Copyright information
-   - Social media links (use placeholder #)
+Styling:
 
-5. Styling:
-   - Use Tailwind CSS classes for layout and design
-   - Implement a linear gradient background
-   - Use vibrant colors and modern design elements
+Utilize Tailwind CSS classes for primary layout and design
+Implement custom CSS for unique color enhancements and specific styling needs
+Create a visually appealing color scheme using a harmonious palette (suatable and best)
+Apply gradient backgrounds where appropriate (suatable)
+Incorporate subtle, smooth animations to enhance user experience (best applyable)
 
-6. JavaScript:
-   - Implement interactivity for the buttons
-   - Use localStorage to store and retrieve at least one piece of information
-   - Fetch and display images from the Pexels API, with the API key stored in a `.env` file
-   - Include code to read the Pexels API key from the `.env` file (key name: PEXELS_API_KEY)
 
-7. Environment setup:
-   - get the Pexels API key from the .env file (PEXELS_API_KEY)
+Custom Elements:
 
-Provide the complete code for the HTML file, a separate CSS file (if any custom styles are needed beyond Tailwind), and a separate JavaScript file. Ensure all three files are fully functional and properly linked.
+Design and implement custom SVG elements for icons, illustrations, or decorative purposes (provide complete SVG code)
+Fetch and display high-quality, relevant images from the Pexels API (include API call in JavaScript , get the pixel api from .env file ())
 
-Remember to avoid Incomplete HTML or missing <div> tags, especially for the Pexels API integration and .env file usage. '''
 
-    threads = []
+Layout and Components:
+
+Create a responsive header with logo and navigation menu
+Design a visually engaging hero section relevant to the {page_name}
+Implement content sections with appropriate layout for the page type
+Include interactive elements like buttons, forms, or cards with hover effects
+Design a footer with copyright info and social media links
+
+
+Animations and Interactivity:
+
+Add subtle scroll animations for content reveal
+Implement smooth transitions for interactive elements
+Create micro-interactions for buttons and links
+
+
+JavaScript Functionality:
+
+Implement any necessary interactive features (e.g., modals, sliders, form validation)
+Add event listeners for user interactions
+Implement lazy loading for images and heavy content
+
+
+SEO Optimization:
+
+Generate SEO-optimized content for the {page_name} (minimum 300 words)
+Include appropriate headings (H1, H2, H3) with relevant keywords
+Add meta description and title tags
+Implement schema markup relevant to the page content
+
+
+Performance Optimization:
+
+Minify CSS and JavaScript
+Optimize images and use appropriate formats (WebP where supported)
+Implement critical CSS for above-the-fold content
+
+
+Accessibility:
+
+Ensure proper color contrast ratios
+Add appropriate ARIA labels and roles
+Implement keyboard navigation support
+
+
+Additional Features:
+
+Implement a simple cookie consent banner
+Create a "Back to Top" button that appears on scroll
+
+
+
+Provide the complete, production-ready HTML, CSS (both Tailwind classes and custom CSS), and JavaScript code for the {page_name}. Include inline comments explaining key sections and any complex logic.'''
+
     result_queue = queue.Queue()
-
+    threads = []
+    
+    # Start thread for each page
     for page in pages:
         thread = threading.Thread(target=generate_page, args=(page, original_prompt, base_prompt, folder_name, result_queue))
-        thread.start()
         threads.append(thread)
+        thread.start()
 
+    # Wait for all threads to finish
     for thread in threads:
         thread.join()
 
-    # Collect results
     generated_pages = []
     while not result_queue.empty():
         generated_pages.append(result_queue.get())
-
-    create_global_style(folder_name)
-    update_navbar(folder_name, generated_pages)
-
-    return jsonify({"folder": folder_name})
-
-# Create global style for navbar
-def create_global_style(folder_name):
-    folder_path = os.path.join('generated_folders', folder_name)
-    global_style_path = os.path.join(folder_path, 'global-style.css')
     
-    env_path = os.path.join(folder_path, '.env')
-    pixel_api_key = 'yqbAXj60yoBMJ7uOaBENAdPhcvnNyiUYIen5n0yuqPIhl3J8T9NLSjqC'
+    # Update HTML files with custom navbar
+    update_html_with_navbar(folder_name, generated_pages)
     
-    with open(env_path, 'w') as env_file:
-        env_file.write(f'PIXELS_API_KEY={pixel_api_key}\n')
+    return jsonify({"folder": folder_name, "pages": generated_pages})
 
-    navbar_css = '''
-    /* Navbar Styles */
-.navbar {
-    background: linear-gradient(90deg, #2c3e50, #3498db);
-    padding: 0.5rem 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
+# Route to serve generated files
+@app.route('/view/<folder>/<path:filename>')
+def view(folder, filename):
+    return send_from_directory(os.path.join('generated_folders', folder), filename)
 
-.navbar:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.navbar-brand {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-}
-
-.navbar-brand:hover {
-    text-shadow: 0 0 10px rgba(255,255,255,0.5);
-}
-
-.navbar-toggler {
-    border-color: rgba(255,255,255,0.5);
-    transition: all 0.3s ease;
-}
-
-.navbar-toggler:hover {
-    background-color: rgba(255,255,255,0.1);
-}
-
-.navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-}
-
-.navbar-nav {
-    display: flex;
-    align-items: center;
-}
-
-.navbar-nav .nav-item {
-    margin: 0 0.2rem;
-}
-
-.navbar-nav .nav-link {
-    color: #ffffff;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.navbar-nav .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background-color: #ffffff;
-    transition: all 0.3s ease;
-}
-
-.navbar-nav .nav-link:hover::after,
-.navbar-nav .nav-link:focus::after,
-.navbar-nav .nav-item.active .nav-link::after {
-    width: 100%;
-    left: 0;
-}
-
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:focus {
-    color: #f8f9fa;
-    background-color: rgba(255,255,255,0.1);
-}
-
-.navbar-nav .nav-item.active .nav-link {
-    color: #ffffff;
-    background-color: rgba(255,255,255,0.2);
-}
-
-@media (max-width: 991.98px) {
-    .navbar-nav {
-        padding-top: 0.5rem;
-    }
-    .navbar-nav .nav-item {
-        margin: 0.2rem 0;
-    }
-    .navbar-nav .nav-link {
-        padding: 0.5rem 1rem;
-    }
-}
-
-/* Add this for a smooth slide-down animation when toggling on mobile */
-@media (max-width: 991.98px) {
-    .navbar-collapse {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-    }
-    .navbar-collapse.show {
-        max-height: 500px; /* Adjust this value based on your content */
-    }
-}
-    '''
-    
-    with open(global_style_path, 'w', encoding='utf-8') as f:
-        f.write(navbar_css)
-
-# Update navbar in all generated pages and link global-style.css
-def update_navbar(folder_name, pages):
-    folder_path = os.path.join('generated_folders', folder_name)
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.html'):
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-
-            # Insert the navbar in the body
-            new_navbar = '''
-            <nav class="navbar navbar-expand-lg">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">Your Brand</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto">
-            '''
-            
-            for page in pages:
-                page_filename = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
-                new_navbar += f'''
-                            <li class="nav-item">
-                                <a class="nav-link" href="{page_filename}">{page}</a>
-                            </li>
-                '''
-            
-            new_navbar += '''
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-            '''
-            
-            # Insert the global-style.css link in the <head> section
-            head_tag_index = content.find('</head>')
-            if head_tag_index != -1:
-                global_style_link = '<link rel="stylesheet" href="global-style.css">\n'
-                content = content[:head_tag_index] + global_style_link + content[head_tag_index:]
-            
-            # Insert the new navbar right after the opening <body> tag
-            body_tag_index = content.find('<body')
-            if body_tag_index != -1:
-                body_end_index = content.find('>', body_tag_index)
-                if body_end_index != -1:
-                    content = content[:body_end_index + 1] + new_navbar + content[body_end_index + 1:]
-
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-
-# Serve generated files route
-@app.route('/generated_folders/<folder_name>/<path:filename>')
-def serve_generated_file(folder_name, filename):
-    folder_path = os.path.join('generated_folders', folder_name)
-    try:
-        return send_from_directory(folder_path, filename)
-    except FileNotFoundError:
-        # Return a 404 error if file is not found
-        return "File not found", 404
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

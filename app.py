@@ -112,7 +112,7 @@ def enhance_prompt(prompt):
     enhancement_prompt = prompt + ' enhance this prompt in 50 words, and provide the enhanced prompt like, your enhanced prompt is :'
     
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": enhancement_prompt}]
     )
     
@@ -137,7 +137,7 @@ def regenerate_code(prompt):
 
     while retry:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}]
         )
 
