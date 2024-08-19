@@ -7,6 +7,8 @@ from g4f.client import Client
 import threading
 import queue
 
+
+avoid ="do not add any chineese word in the reponse , go with pure english "
 app = Flask(__name__)
 
 # Counter to track code generation failures
@@ -182,6 +184,41 @@ def update_html_with_navbar(folder_name, pages):
         
         print(f"Updated {file_name} with custom navbar.")
 
+def update_navbar_links(folder_name, pages):
+    folder_path = os.path.join('generated_folders', folder_name)
+
+    for page_name in pages:
+        # Format the page file name
+        file_name = 'index.html' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.html"
+        file_path = os.path.join(folder_path, file_name)
+
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+
+        # Update href links in the navbar
+        for p in pages:
+            # Format the href links just like the file names
+            new_href = 'index.html' if p.lower() == 'home' else f"{p.lower().replace(' ', '-')}.html"
+            
+            # Remove any leading or trailing slashes from the new href
+            new_href = new_href.strip('/')
+
+            # Update the href attribute in the navbar
+            content = re.sub(
+                rf'href=["\'](?:/{re.escape(p.lower())}\.html|/{re.escape(p.lower().replace(" ", "-"))}\.html)["\']',
+                f'href="{new_href}"',
+                content
+            )
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+
+        print(f"Updated navbar links in {file_name}")
+
+# Example usage:
+# update_navbar_links('my_folder', ['Home', 'About Us', 'Contact'])
+
+        
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -195,7 +232,7 @@ def generate():
     client = Client()
     
     # Get the list of pages
-    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string: the response has to be like 'the minimum required pages are: ...'"
+    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string: the response has to be like 'the minimum required pages are: ...' and {avoid}"
     pages_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": pages_prompt}]
@@ -281,7 +318,7 @@ Create a "Back to Top" button that appears on scroll
 
 
 
-Provide the complete, production-ready HTML, CSS (both Tailwind classes and custom CSS), and JavaScript code for the {page_name}. Include inline comments explaining key sections and any complex logic.'''
+Provide the complete, production-ready HTML, CSS (both Tailwind classes and custom CSS), and JavaScript code for the {page_name}. Include inline comments explaining key sections and any complex logic.and{avoid}'''
 
     result_queue = queue.Queue()
     threads = []
@@ -302,6 +339,9 @@ Provide the complete, production-ready HTML, CSS (both Tailwind classes and cust
     
     # Update HTML files with custom navbar
     update_html_with_navbar(folder_name, generated_pages)
+
+    update_navbar_links(folder_name, generated_pages)
+
     
     return jsonify({"folder": folder_name, "pages": generated_pages})
 
