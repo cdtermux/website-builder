@@ -1,0 +1,21 @@
+fix navbar issues mentioned below.                                                        -- bugs
+  - fix broken links in li's by syncing navbar with file creaion logic.
+  - add brand name in the navbar.
+  - try to get different css each time navbar generated.
+  - fix duplicate navbars, by removing the navbar which is generated with page generation.
+  - try to generate navbar parallelly with page geneartion using threads.
+  
+fastrack the pages geneartion process by                                                  -- enhancement feature
+  - applying multiple threads to incomplete html page , and save the first correct one
+  - try to use multiple threads to generate single page instead of one.
+  - implement stream functionality and let user to see the website generation live.
+
+page style and content enhancements                                                        -- enhancement feature
+  - try to enhance the prompt given by user.
+  - try to enhance the base prompt.
+  - try to get multiple inputs from user by using ai bot ask questions regarding the website.
+
+hosting                                                                                    -- feature
+  - let user to edit the website and change the content and generate the required part and crud operations.
+  - let user to host the website using github pages or netlify.
+  - add a loader untill the site is live.
