@@ -14,6 +14,28 @@ app = Flask(__name__)
 # Counter to track code generation failures
 code_generation_failures = {}
 
+from datetime import datetime
+
+def write_to_log(new_content, file_path = 'logs.txt' ):
+    # Get the current date and time
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # Create the log content with date and time
+    log_entry = f"{current_time} - {new_content}"
+    
+    try:
+        with open(file_path, 'a') as file:
+            file.write(log_entry + '\n')  # Adding a newline character for readability
+        print(f"Content successfully written to {file_path}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+# Example usage
+file_path = 'logs.txt'
+# new_content = 'This is the new log entry.'
+
+
 # Function to generate a random folder name
 def generate_random_folder_name(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -90,6 +112,8 @@ def create_files(code_sections, folder_name, page_name):
         js_file.write(code_sections["js"])
 
     print(f'Page {page_name} generated successfully.')
+    new_content =f"Page {page_name} generated successfully."
+    write_to_log(new_content)
 
 # Function to regenerate the code
 def regenerate_code(prompt):
@@ -121,6 +145,8 @@ def generate_page(page, original_prompt, base_prompt, folder_name, result_queue)
 
         if not is_complete_html(code_sections["html"]) or not contains_div_tags(code_sections["html"]):
             print(f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating...")
+            new_content =f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating..."
+            write_to_log(new_content )
             continue
 
         break
@@ -158,6 +184,10 @@ def generate_custom_navbar(pages):
             return navbar_html
         else:
             print("Navbar not found in the generated content. Retrying...")
+            new_content ="Navbar not found in the generated content. Retrying..."
+            write_to_log(new_content )
+
+
 
     return ""  # Return an empty string if no navbar is generated after multiple attempts
 # Function to update HTML files with the custom navbar
@@ -183,8 +213,13 @@ def update_html_with_navbar(folder_name, pages):
                     file.write(updated_content)
         
         print(f"Updated {file_name} with custom navbar.")
+        new_content =f"Updated {file_name} with custom navbar."
+        write_to_log(new_content)
 
 def update_navbar_links(folder_name, pages):
+    print("navbar updation starts...")
+    new_content ="navbar updation starts..."
+    write_to_log( new_content)
     folder_path = os.path.join('generated_folders', folder_name)
 
     for page_name in pages:
@@ -212,8 +247,15 @@ def update_navbar_links(folder_name, pages):
 
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(content)
+            print(f"Updated navbar links in {p}")
+            new_content =f"Updated navbar links in {p}"
+            write_to_log(new_content)
 
+
+        new_content =f"Updated navbar links in {file_name}"
+        write_to_log(new_content)
         print(f"Updated navbar links in {file_name}")
+        
 
 # Example usage:
 # update_navbar_links('my_folder', ['Home', 'About Us', 'Contact'])
