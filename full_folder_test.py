@@ -1,22 +1,41 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+import logging
+import queue
+import threading
+from flask import Flask, jsonify, request, render_template, send_from_directory
 import os
 import random
 import string
 import re
 from g4f.client import Client
-import threading
-import queue
+from datetime import datetime
 
-
-avoid ="do not add any chineese word in the reponse , go with pure english "
+# Flask app setup
 app = Flask(__name__)
+
+# Logging configuration
+log_level = logging.DEBUG
+log_file = 'app.log'
+log_file_mode = 'a'
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+
+logging.basicConfig(level=log_level, filename=log_file, filemode=log_file_mode, format=log_format)
+
+# Add console handler if you want logs to also appear in the console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(log_level)
+console_handler.setFormatter(logging.Formatter(log_format))
+app.logger.addHandler(console_handler)
+
+# Example usage of logging in your app
+app.logger.info('Starting Flask app')
+
 
 # Counter to track code generation failures
 code_generation_failures = {}
+avoid ="do not add any chineese word in the reponse , go with pure english "
 
-from datetime import datetime
-
-def write_to_log(new_content, file_path = 'logs.txt' ):
+# Your existing code below
+def write_to_log(new_content, file_path='logs.txt'):
     # Get the current date and time
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
@@ -26,9 +45,10 @@ def write_to_log(new_content, file_path = 'logs.txt' ):
     try:
         with open(file_path, 'a') as file:
             file.write(log_entry + '\n')  # Adding a newline character for readability
-        print(f"Content successfully written to {file_path}")
+        app.logger.info(f"Content successfully written to {file_path}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        app.logger.error(f"An error occurred: {e}")
+
 
 
 # Example usage
@@ -113,7 +133,7 @@ def create_files(code_sections, folder_name, page_name):
 
     print(f'Page {page_name} generated successfully.')
     new_content =f"Page {page_name} generated successfully."
-    write_to_log(new_content)
+    write_to_log(new_content )
 
 # Function to regenerate the code
 def regenerate_code(prompt):
@@ -138,6 +158,8 @@ def regenerate_code(prompt):
 # Function to generate a page
 def generate_page(page, original_prompt, base_prompt, folder_name, result_queue):
     prompt = f"{original_prompt} - {page} page: {base_prompt}"
+    # Force a log entry to test
+    app.logger.info('Starting Flask app')
     
     while True:
         response_content = regenerate_code(prompt)
@@ -260,9 +282,11 @@ def update_navbar_links(folder_name, pages):
 # Example usage:
 # update_navbar_links('my_folder', ['Home', 'About Us', 'Contact'])
 
-        
+# Force a log entry to test
+app.logger.info('Starting Flask app')
 @app.route('/')
 def index():
+    app.logger.info('Index route accessed')
     return render_template('index.html')
 
 # Generate pages route
@@ -270,7 +294,7 @@ def index():
 def generate():
     global code_generation_failures
     original_prompt = request.json.get('prompt')
-    
+    app.logger.info('generation started..')
     client = Client()
     
     # Get the list of pages
@@ -393,4 +417,4 @@ def view(folder, filename):
     return send_from_directory(os.path.join('generated_folders', folder), filename)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
