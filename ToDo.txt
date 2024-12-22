@@ -4,6 +4,11 @@ fix navbar issues mentioned below.                                              
   - try to get different css each time navbar generated.
   - fix duplicate navbars, by removing the navbar which is generated with page generation.
   - try to generate navbar parallelly with page geneartion using threads.
+
+To solve api errors:
+  - sperate backend and frontend
+  - in backend saperate api handling in python and node js in backend
+  - use react or another framework in frontend.
   
 fastrack the pages geneartion process by                                                  -- enhancement feature
   - applying multiple threads to incomplete html page , and save the first correct one

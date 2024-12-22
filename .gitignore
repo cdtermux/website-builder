@@ -1,3 +1,5 @@
 myenv
 generated_folders
 logs.txt
+app.log
+flask.log

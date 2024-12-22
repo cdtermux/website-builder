@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request, jsonify, render_template, send_from_directory
 import os
 import random
@@ -10,7 +11,16 @@ import queue
 
 avoid ="do not add any chineese word in the reponse , go with pure english "
 app = Flask(__name__)
+# DEBUG, INFO, WARNING, ERROR, CRITICAL
+log_level = logging.DEBUG
+log_file = 'app.log'
+log_file_mode = 'a'
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
 
+logging.basicConfig(level=log_level, filename=log_file, filemode=log_file_mode, format=log_format)
+
+# Force a log entry to test
+app.logger.info('Starting Flask app')
 # Counter to track code generation failures
 code_generation_failures = {}
 
@@ -351,4 +361,4 @@ def view(folder, filename):
     return send_from_directory(os.path.join('generated_folders', folder), filename)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
