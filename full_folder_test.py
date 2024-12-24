@@ -8,7 +8,6 @@ import string
 import re
 from g4f.client import Client
 from datetime import datetime
-from bs4 import BeautifulSoup
 
 # Flask app setup
 app = Flask(__name__)
@@ -99,243 +98,239 @@ def create_files(code_sections, folder_name, page_name):
     folder_path = os.path.join('generated_folders', folder_name)
     os.makedirs(folder_path, exist_ok=True)
     
-    # Clean HTML content
-    html_content = clean_html_content(code_sections["html"])
-    
-    # Standardize file names
+    # Format the page file name
     file_name = 'index.html' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.html"
-    css_filename = f"{page_name.lower().replace(' ', '-')}.css"
-    js_filename = f"{page_name.lower().replace(' ', '-')}.js"
     
-    # Process HTML
-    soup = BeautifulSoup(html_content, 'html.parser')
+    # Save HTML file
+    with open(os.path.join(folder_path, file_name), 'w', encoding='utf-8') as html_file:
+        html_content = code_sections["html"]
+        
+        head_tag_index = html_content.find('</head>')
+        if head_tag_index != -1:
+            # Link specific page styles and global styles
+            html_content = html_content[:head_tag_index] + f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n<link rel="stylesheet" href="global-style.css">\n' + html_content[head_tag_index:]
+        else:
+            html_content = f'<link rel="stylesheet" href="{page_name.lower().replace(" ", "-")}.css">\n<link rel="stylesheet" href="global-style.css">\n' + html_content
+        
+        # Add the corresponding script file at the end of the body tag
+        body_tag_index = html_content.find('</body>')
+        if body_tag_index != -1:
+            html_content = html_content[:body_tag_index] + f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>\n' + html_content[body_tag_index:]
+        else:
+            html_content += f'<script src="{page_name.lower().replace(" ", "-")}.js"></script>'
+        
+        html_file.write(html_content)
+
+    # Save CSS to a page-specific file
+    css_filename = 'home.css' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.css"
+    with open(os.path.join(folder_path, css_filename), 'w', encoding='utf-8') as css_file:
+        css_file.write(code_sections["css"])
     
-    # Update head section
-    head = soup.find('head')
-    if not head:
-        head = soup.new_tag('head')
-        soup.html.insert(0, head)
-    
-    # Add meta tags if missing
-    if not soup.find('meta', charset=True):
-        meta_charset = soup.new_tag('meta', charset='UTF-8')
-        head.insert(0, meta_charset)
-    
-    # Add CSS links
-    css_link = soup.new_tag('link', rel='stylesheet', href=css_filename)
-    head.append(css_link)
-    
-    # Add JS at end of body
-    body = soup.find('body')
-    if body:
-        script = soup.new_tag('script', src=js_filename)
-        body.append(script)
-    
-    # Write files
-    with open(os.path.join(folder_path, file_name), 'w', encoding='utf-8') as f:
-        f.write(str(soup.prettify()))
-    
-    with open(os.path.join(folder_path, css_filename), 'w', encoding='utf-8') as f:
-        f.write(standardize_css(code_sections["css"], page_name))
-    
-    with open(os.path.join(folder_path, js_filename), 'w', encoding='utf-8') as f:
-        f.write(code_sections["js"])
+    # Save JS to a page-specific file
+    js_filename = 'home.js' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.js"
+    with open(os.path.join(folder_path, js_filename), 'w', encoding='utf-8') as js_file:
+        js_file.write(code_sections["js"])
+
+    print(f'Page {page_name} generated successfully.')
+    new_content =f"Page {page_name} generated successfully."
+    write_to_log(new_content )
 
 # Function to regenerate the code
-def regenerate_code(prompt, attempt=1):
-    """Generate code with multiple model fallbacks"""
+def regenerate_code(prompt):
     client = Client()
-    models = [
-        "o1-mini",          # First 3 attempts
-        "gpt-4o",           # Next attempt
-        "gpt-4o-mini",      # Next attempt
-        "gpt-3.5-turbo"    # Final fallback
-    ]
-    
-    try:
-        # First 3 attempts with o1-mini
-        if attempt <= 3:
-            model = models[0]
-        # Subsequent attempts use different models
-        elif attempt <= 6:
-            model = models[attempt - 3]
-        else:
-            app.logger.error("All model attempts exhausted")
-            raise Exception("Failed to generate code with all available models")
+    retry = True
 
-        app.logger.info(f"Attempting code generation with model: {model} (Attempt {attempt})")
-        
+    while retry:
         response = client.chat.completions.create(
-            model=model,
+            model="claude-3.5-sonnet",
             messages=[{"role": "user", "content": prompt}]
         )
 
         response_content = response.choices[0].message.content
 
         if "您的ip已由于触发防滥用检测而被封禁" in response_content:
-            if attempt < 6:  # Try next attempt if not exhausted
-                return regenerate_code(prompt, attempt + 1)
-            else:
-                raise Exception("IP blocked and all models exhausted")
+            continue
+        else:
+            retry = False
 
-        return response_content
-
-    except Exception as e:
-        app.logger.error(f"Model {model} failed: {str(e)}")
-        if attempt < 6:  # Try next attempt if not exhausted
-            return regenerate_code(prompt, attempt + 1)
-        raise Exception("All model attempts failed")
+    return response_content
 
 # Function to generate a page
 def generate_page(page, original_prompt, base_prompt, folder_name, result_queue):
-    # Add retry counter and max attempts
-    max_attempts = 3
-    attempts = 0
     prompt = f"{original_prompt} - {page} page: {base_prompt}"
+    # Force a log entry to test
+    app.logger.info('Starting Flask app')
     
-    while attempts < max_attempts:
-        try:
-            response_content = regenerate_code(prompt)
-            code_sections = extract_code_sections(response_content)
+    while True:
+        response_content = regenerate_code(prompt)
+        code_sections = extract_code_sections(response_content)
 
-            # More thorough validation
-            if not is_complete_html(code_sections["html"]) or \
-               not contains_div_tags(code_sections["html"]) or \
-               not code_sections["css"].strip() or \
-               not code_sections["js"].strip():
-                raise ValueError("Incomplete code sections")
+        if not is_complete_html(code_sections["html"]) or not contains_div_tags(code_sections["html"]):
+            print(f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating...")
+            new_content =f"Incomplete HTML or missing <div> tags detected for {page}. Regenerating..."
+            write_to_log(new_content )
+            continue
 
-            create_files(code_sections, folder_name, page)
-            result_queue.put({"page": page, "status": "success"})
-            return
-        except Exception as e:
-            attempts += 1
-            app.logger.error(f"Failed attempt {attempts} for {page}: {str(e)}")
+        break
+
+    create_files(code_sections, folder_name, page)
+    result_queue.put(page)
+
+def generate_navbar_css(navbar_html):
+    """Generate custom CSS for the navbar using AI"""
+    client = Client()
     
-    result_queue.put({"page": page, "status": "failed"})
-
-# New function to generate custom navbar
-def generate_custom_navbar(pages):
-    """Generate a single, clean navbar"""
-    nav_html = """
-    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-md z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-xl font-bold text-gray-800">Brand</a>
-                <div class="hidden md:block">
-                    <ul class="flex space-x-4">
+    css_prompt = f"""
+    Given this navbar HTML:
+    {navbar_html}
+    
+    Generate modern, professional CSS that will:
+    1. Create a sleek, professional navigation bar
+    2. Include smooth hover transitions
+    3. Ensure proper spacing and alignment
+    4. Make the navbar sticky/fixed at the top
+    5. Handle both light and dark modes
+    6. Include responsive design for mobile
+    7. Add subtle shadows and depth
+    8. Ensure high contrast and readability
+    
+    Return ONLY the CSS code wrapped in ```css``` tags.
     """
     
-    for page in pages:
-        file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
-        nav_html += f'                        <li><a href="{file_name}" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">{page}</a></li>\n'
-    
-    nav_html += """
+    try:
+        response = client.chat.completions.create(
+            model="claude-3.5-sonnet",
+            messages=[{"role": "user", "content": css_prompt}]
+        )
+        
+        css_content = response.choices[0].message.content
+        
+        # Extract CSS from code blocks
+        css_match = re.search(r'```css(.*?)```', css_content, re.DOTALL)
+        if css_match:
+            return css_match.group(1).strip()
+        return ""
+    except Exception as e:
+        app.logger.error(f"Failed to generate navbar CSS: {str(e)}")
+        return ""
+
+def generate_custom_navbar(pages):
+    """Generate the standardized navbar HTML"""
+    navbar_html = '''
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-content">
+                <!-- Logo -->
+                <div class="nav-logo">
+                    <a href="index.html">
+                        <img src="/path/to/logo.svg" alt="Logo">
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="nav-links">
+                    <ul class="nav-list">
+                        {nav_links}
                     </ul>
                 </div>
-                <button class="md:hidden rounded-md p-2 hover:bg-gray-100" id="mobile-menu-button" aria-label="Menu">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="hidden md:hidden" id="mobile-menu">
-                <ul class="pt-2 pb-3 space-y-1">
-    """
-    
-    for page in pages:
-        file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
-        nav_html += f'                    <li><a href="{file_name}" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">{page}</a></li>\n'
-    
-    nav_html += """
-                </ul>
             </div>
         </div>
-        <script>
-            document.getElementById('mobile-menu-button').addEventListener('click', function() {
-                document.getElementById('mobile-menu').classList.toggle('hidden');
-            });
-        </script>
     </nav>
-    <div class="h-16"></div> <!-- Spacer for fixed navbar -->
-    """
+    '''
     
-    return nav_html
+    nav_links = []
+    for page in pages:
+        file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
+        link_text = page.replace('-', ' ').title()
+        nav_links.append(f'<li class="nav-item"><a href="{file_name}">{link_text}</a></li>')
+    
+    return navbar_html.format(nav_links='\n'.join(nav_links))
 
-# Function to update HTML files with the custom navbar
 def update_html_with_navbar(folder_name, pages):
+    """Update HTML files with navbar and create/link navbar CSS"""
     folder_path = os.path.join('generated_folders', folder_name)
-    navbar_html = generate_custom_navbar(pages)
     
+    # Generate navbar HTML and CSS
+    navbar_html = generate_custom_navbar(pages)
+    navbar_css = generate_navbar_css(navbar_html)
+    
+    # Save navbar CSS to file
+    css_path = os.path.join(folder_path, 'navbar.css')
+    with open(css_path, 'w', encoding='utf-8') as f:
+        f.write(navbar_css)
+    
+    # Update each HTML file
     for page in pages:
         file_name = 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
         file_path = os.path.join(folder_path, file_name)
         
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-            
-            soup = BeautifulSoup(content, 'html.parser')
-            
-            # Remove any existing navbars
-            for nav in soup.find_all('nav'):
-                nav.decompose()
-            
-            # Add the new navbar right after body tag
-            body = soup.find('body')
-            if body:
-                new_nav = BeautifulSoup(navbar_html, 'html.parser')
-                body.insert(0, new_nav)
-            
-            # Ensure Tailwind CSS is present
-            head = soup.find('head')
-            if head and not soup.find('link', href=lambda x: x and 'tailwindcss' in x):
-                tailwind_link = soup.new_tag('link')
-                tailwind_link['href'] = 'https://cdn.tailwindcss.com'
-                tailwind_link['rel'] = 'stylesheet'
-                head.insert(0, tailwind_link)
-            
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(str(soup.prettify()))
-            
-            app.logger.info(f"Updated {file_name} with custom navbar and ensured Tailwind CSS")
-            
-        except Exception as e:
-            app.logger.error(f"Error updating {file_name}: {str(e)}")
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        
+        # Remove any existing navigation elements
+        content = re.sub(r'<nav\b[^>]*>.*?</nav>', '', content, flags=re.DOTALL)
+        
+        # Add navbar CSS link in head if not present
+        css_link = '<link rel="stylesheet" href="navbar.css">'
+        if '</head>' in content and css_link not in content:
+            content = content.replace('</head>', f'    {css_link}\n</head>')
+        
+        # Insert navbar after body tag
+        body_tag_index = content.find('<body')
+        if body_tag_index != -1:
+            closing_bracket_index = content.find('>', body_tag_index)
+            if closing_bracket_index != -1:
+                updated_content = (
+                    content[:closing_bracket_index + 1] + 
+                    '\n' + navbar_html + 
+                    content[closing_bracket_index + 1:]
+                )
+                
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(updated_content)
+        
+        write_to_log(f"Updated {file_name} with custom navbar and ensured Tailwind CSS")
 
 def update_navbar_links(folder_name, pages):
+    print("navbar updation starts...")
+    new_content ="navbar updation starts..."
+    write_to_log( new_content)
     folder_path = os.path.join('generated_folders', folder_name)
-    
-    # Generate mapping of page names to file names
-    file_mapping = {
-        page: 'index.html' if page.lower() == 'home' else f"{page.lower().replace(' ', '-')}.html"
-        for page in pages
-    }
-    
+
     for page_name in pages:
-        file_path = os.path.join(folder_path, file_mapping[page_name])
-        
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
+        # Format the page file name
+        file_name = 'index.html' if page_name.lower() == 'home' else f"{page_name.lower().replace(' ', '-')}.html"
+        file_path = os.path.join(folder_path, file_name)
 
-            # Update all navigation links
-            for original_page, target_file in file_mapping.items():
-                # Handle both absolute and relative paths
-                content = re.sub(
-                    rf'href=["\'](?:/)?(?:.*?/)?{re.escape(original_page.lower())}.html["\']',
-                    f'href="{target_file}"',
-                    content,
-                    flags=re.IGNORECASE
-                )
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
 
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.write(content)
-                
-            app.logger.info(f"Successfully updated navbar links in {file_mapping[page_name]}")
+        # Update href links in the navbar
+        for p in pages:
+            # Format the href links just like the file names
+            new_href = 'index.html' if p.lower() == 'home' else f"{p.lower().replace(' ', '-')}.html"
             
-        except Exception as e:
-            app.logger.error(f"Error updating navbar links in {file_mapping[page_name]}: {str(e)}")
+            # Remove any leading or trailing slashes from the new href
+            new_href = new_href.strip('/')
+
+            # Update the href attribute in the navbar
+            content = re.sub(
+                rf'href=["\'](?:/{re.escape(p.lower())}\.html|/{re.escape(p.lower().replace(" ", "-"))}\.html)["\']',
+                f'href="{new_href}"',
+                content
+            )
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(content)
+            print(f"Updated navbar links in {p}")
+            new_content =f"Updated navbar links in {p}"
+            write_to_log(new_content)
+
+
+        new_content =f"Updated navbar links in {file_name}"
+        write_to_log(new_content)
+        print(f"Updated navbar links in {file_name}")
+        
 
 # Example usage:
 # update_navbar_links('my_folder', ['Home', 'About Us', 'Contact'])
@@ -350,214 +345,78 @@ def index():
 # Generate pages route
 @app.route('/generate', methods=['POST'])
 def generate():
-    try:
-        original_prompt = request.json.get('prompt')
-        if not original_prompt:
-            return jsonify({"error": "No prompt provided"}), 400
+    global code_generation_failures
+    original_prompt = request.json.get('prompt')
+    app.logger.info('generation started..')
+    client = Client()
+    
+    # Get the list of pages
+    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string: the response has to be like 'the minimum required pages are: ...' and {avoid}"
+    pages_response = client.chat.completions.create(
+        model="claude-3.5-sonnet",
+        messages=[{"role": "user", "content": pages_prompt}]
+    )
+    
+    pages = [page.strip() for page in pages_response.choices[0].message.content.split(':')[1].split(',')]
+    
+    folder_name = generate_random_folder_name()
+    
+    base_prompt = '''Generate a complete, production-ready web page for a {page_name} using modern web development best practices. The page should be visually striking, highly functional, and optimized for performance and SEO. Utilize HTML5, Tailwind CSS (via CDN), custom CSS for enhancements, and JavaScript (ES6+). Include the following elements:
 
-        folder_name = generate_random_folder_name()
-        result_queue = queue.Queue()
-        threads = []
-        
-        # Get pages with retry logic
-        pages = get_pages_with_retry(original_prompt)
-        if not pages:
-            return jsonify({"error": "Failed to generate page list"}), 500
+HTML Structure:
+Use semantic HTML5 tags for improved accessibility and SEO
+Implement proper document structure with appropriate meta tags
+Include a responsive viewport meta tag
+DO NOT include a navigation bar or header navigation - this will be added separately
 
-        # Generate pages with proper thread management
-        for page in pages:
-            thread = threading.Thread(
-                target=generate_page,
-                args=(page, original_prompt, base_prompt, folder_name, result_queue)
-            )
-            threads.append(thread)
-            thread.start()
+Styling:
+Utilize Tailwind CSS classes for primary layout and design
+Implement custom CSS for unique color enhancements and specific styling needs
+Create a visually appealing color scheme using a harmonious palette
+Apply gradient backgrounds where appropriate
+Incorporate subtle, smooth animations to enhance user experience
 
-        # Wait for all threads with timeout
-        for thread in threads:
-            thread.join(timeout=300)  # 5-minute timeout
+Custom Elements:
+Design and implement custom SVG elements for icons, illustrations, or decorative purposes
+Fetch and display high-quality, relevant images from the Pexels API
 
-        # Process results
-        results = []
-        failed_pages = []
-        while not result_queue.empty():
-            result = result_queue.get()
-            if result["status"] == "success":
-                results.append(result["page"])
-            else:
-                failed_pages.append(result["page"])
+Layout and Components:
+Design a visually engaging hero section relevant to the {page_name}
+Implement content sections with appropriate layout for the page type
+Include interactive elements like buttons, forms, or cards with hover effects
+Design a footer with copyright info and social media links
 
-        if failed_pages:
-            app.logger.error(f"Failed to generate pages: {failed_pages}")
-            
-        if results:
-            update_html_with_navbar(folder_name, results)
-            update_navbar_links(folder_name, results)
-            return jsonify({"folder": folder_name, "pages": results, "failed_pages": failed_pages})
-        else:
-            return jsonify({"error": "No pages were generated successfully"}), 500
+[... rest of the prompt remains the same ...]'''
 
-    except Exception as e:
-        app.logger.error(f"Generation failed: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+    result_queue = queue.Queue()
+    threads = []
+    
+    # Start thread for each page
+    for page in pages:
+        thread = threading.Thread(target=generate_page, args=(page, original_prompt, base_prompt, folder_name, result_queue))
+        threads.append(thread)
+        thread.start()
+
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
+
+    generated_pages = []
+    while not result_queue.empty():
+        generated_pages.append(result_queue.get())
+    
+    # Update HTML files with custom navbar
+    update_html_with_navbar(folder_name, generated_pages)
+
+    update_navbar_links(folder_name, generated_pages)
+
+    
+    return jsonify({"folder": folder_name, "pages": generated_pages})
 
 # Route to serve generated files
 @app.route('/view/<folder>/<path:filename>')
 def view(folder, filename):
     return send_from_directory(os.path.join('generated_folders', folder), filename)
-
-def clean_html_content(html_content):
-    """Clean HTML content and ensure proper structure"""
-    soup = BeautifulSoup(html_content, 'html.parser')
-    
-    # Remove ALL navigation-related elements
-    for element in soup.find_all(['nav', 'header']):
-        element.decompose()
-    
-    # Remove elements with navigation-related classes
-    for element in soup.find_all(class_=lambda x: x and any(term in str(x).lower() for term in ['nav', 'menu', 'header', 'navbar'])):
-        element.decompose()
-    
-    # Remove elements with navigation-related IDs
-    for element in soup.find_all(id=lambda x: x and any(term in str(x).lower() for term in ['nav', 'menu', 'header', 'navbar'])):
-        element.decompose()
-    
-    # Ensure proper HTML structure
-    if not soup.html:
-        new_html = soup.new_tag('html')
-        new_html.append(soup)
-        soup = BeautifulSoup(str(new_html), 'html.parser')
-    
-    # Ensure head section exists
-    head = soup.find('head')
-    if not head:
-        head = soup.new_tag('head')
-        soup.html.insert(0, head)
-    
-    # Add required meta tags
-    if not soup.find('meta', charset=True):
-        meta_charset = soup.new_tag('meta', charset='UTF-8')
-        head.insert(0, meta_charset)
-    
-    if not soup.find('meta', attrs={'name': 'viewport'}):
-        meta_viewport = soup.new_tag('meta', attrs={
-            'name': 'viewport',
-            'content': 'width=device-width, initial-scale=1.0'
-        })
-        head.append(meta_viewport)
-    
-    # Ensure Tailwind CSS is present
-    if not soup.find('link', href=lambda x: x and 'tailwindcss' in str(x)):
-        tailwind_link = soup.new_tag('link')
-        tailwind_link['href'] = 'https://cdn.tailwindcss.com'
-        tailwind_link['rel'] = 'stylesheet'
-        head.insert(0, tailwind_link)
-    
-    return str(soup.prettify())
-
-def standardize_css(css_content, page_name):
-    """Add standard CSS and fix paths"""
-    common_styles = """
-    /* Reset and common styles */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    /* Navigation styles */
-    .navbar {
-        position: fixed;
-        width: 100%;
-        top: 0;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Common animations */
-    .fade-in { animation: fadeIn 0.5s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    """
-    
-    return common_styles + "\n" + css_content
-
-def get_pages_with_retry(prompt, max_retries=6):
-    """Get list of pages from the AI with retry logic and model fallbacks"""
-    models = [
-        "o1-mini",          # First 3 attempts
-        "gpt-4o",           # 4th attempt
-        "gpt-4o-mini",      # 5th attempt
-        "gpt-3.5-turbo"     # Final attempt
-    ]
-    
-    for attempt in range(max_retries):
-        try:
-            # Select model based on attempt number
-            if attempt < 3:
-                model = models[0]
-            else:
-                model = models[attempt - 2]
-                
-            app.logger.info(f"Attempting page list generation with model: {model} (Attempt {attempt + 1})")
-            
-            pages_prompt = f"Based on this description: '{prompt}', list only the essential pages needed (minimum 3, maximum 7). Format: Home, About, etc. Only return the comma-separated list, nothing else."
-            
-            client = Client()
-            response = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": pages_prompt}]
-            )
-            
-            pages_text = response.choices[0].message.content.strip()
-            
-            # Check for IP block
-            if "您的ip已由于触发防滥用检测而被封禁" in pages_text:
-                raise Exception("IP blocked")
-            
-            pages = [page.strip() for page in pages_text.split(',')]
-            
-            # Ensure Home page is included
-            if 'Home' not in pages and 'home' not in pages:
-                pages.insert(0, 'Home')
-            
-            # Standardize page names
-            pages = [page.strip().title() for page in pages]
-            
-            if len(pages) >= 3:
-                app.logger.info(f"Successfully generated page list using {model}")
-                return pages
-                
-        except Exception as e:
-            app.logger.error(f"Attempt {attempt + 1} with {model} failed: {str(e)}")
-            if attempt == max_retries - 1:
-                app.logger.warning("All models failed, using fallback pages")
-                return ['Home', 'About', 'Contact']
-            continue
-
-base_prompt = """Create a modern, responsive web page with these requirements:
-1. Use semantic HTML5 structure (NO navigation/menu elements)
-2. Include these meta tags:
-   - charset UTF-8
-   - viewport
-   - description
-3. Style requirements:
-   - Use Tailwind CSS classes
-   - Mobile-first approach
-   - Modern glassmorphism effects
-   - Smooth animations
-4. Content structure:
-   - Main content section
-   - Footer (no navigation)
-   - Clear visual hierarchy
-5. JavaScript features:
-   - Smooth scrolling
-   - Interactive elements
-   - Form validation if applicable
-6. Performance:
-   - Optimize images
-   - Lazy loading
-   - Efficient CSS classes
-
-IMPORTANT: DO NOT include any navigation bars, menus, or site-wide headers - these will be added separately.
-Focus only on the main content of the page.
-"""
 
 if __name__ == "__main__":
     app.run(debug=False)
