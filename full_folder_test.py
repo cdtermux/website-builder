@@ -1,13 +1,15 @@
 import logging
 import queue
 import threading
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template, send_from_directory, Response
 import os
 import random
 import string
 import re
 from g4f.client import Client
 from datetime import datetime
+import json
+import time
 
 # Flask app setup
 app = Flask(__name__)
@@ -345,78 +347,172 @@ def index():
 # Generate pages route
 @app.route('/generate', methods=['POST'])
 def generate():
-    global code_generation_failures
-    original_prompt = request.json.get('prompt')
-    app.logger.info('generation started..')
-    client = Client()
-    
-    # Get the list of pages
-    pages_prompt = f"List out the essential minimum pages that should be created for the website not more than 10 about {original_prompt}. Provide the list as a comma-separated string: the response has to be like 'the minimum required pages are: ...' and {avoid}"
-    pages_response = client.chat.completions.create(
-        model="claude-3.5-sonnet",
-        messages=[{"role": "user", "content": pages_prompt}]
-    )
-    
-    pages = [page.strip() for page in pages_response.choices[0].message.content.split(':')[1].split(',')]
-    
-    folder_name = generate_random_folder_name()
-    
-    base_prompt = '''Generate a complete, production-ready web page for a {page_name} using modern web development best practices. The page should be visually striking, highly functional, and optimized for performance and SEO. Utilize HTML5, Tailwind CSS (via CDN), custom CSS for enhancements, and JavaScript (ES6+). Include the following elements:
+    try:
+        global generated_pages, total_pages
+        generated_pages = []  # Reset for new generation
+        
+        original_prompt = request.json.get('prompt')
+        if not original_prompt:
+            return jsonify({"error": "No prompt provided"}), 400
 
-HTML Structure:
-Use semantic HTML5 tags for improved accessibility and SEO
-Implement proper document structure with appropriate meta tags
-Include a responsive viewport meta tag
-DO NOT include a navigation bar or header navigation - this will be added separately
+        folder_name = generate_random_folder_name()
+        result_queue = queue.Queue()
 
-Styling:
-Utilize Tailwind CSS classes for primary layout and design
-Implement custom CSS for unique color enhancements and specific styling needs
-Create a visually appealing color scheme using a harmonious palette
-Apply gradient backgrounds where appropriate
-Incorporate subtle, smooth animations to enhance user experience
+        # Updated pages prompt for better page name generation
+        pages_prompt = f"""Based on this website requirement, determine essential pages needed:
 
-Custom Elements:
-Design and implement custom SVG elements for icons, illustrations, or decorative purposes
-Fetch and display high-quality, relevant images from the Pexels API
+Website requirement: {original_prompt}
 
-Layout and Components:
-Design a visually engaging hero section relevant to the {page_name}
-Implement content sections with appropriate layout for the page type
-Include interactive elements like buttons, forms, or cards with hover effects
-Design a footer with copyright info and social media links
+STRICT RESPONSE RULES:
+1. Return ONLY a comma-separated list of page names
+2. ALWAYS start with "Home"
+3. Use clear, descriptive page names
+4. NO explanations or additional text
+5. NO apologies or Chinese characters
+6. Maximum 8 pages total
+7. Each page name should be capitalized
+8. Use standard page names (e.g., Home, About, Services)
 
-[... rest of the prompt remains the same ...]'''
+Examples of GOOD responses:
+"Home, About, Services, Portfolio, Contact"
+"Home, Products, Gallery, Contact"
+"Home, Menu, Reservations, About"
 
-    result_queue = queue.Queue()
-    threads = []
-    
-    # Start thread for each page
-    for page in pages:
-        thread = threading.Thread(target=generate_page, args=(page, original_prompt, base_prompt, folder_name, result_queue))
-        threads.append(thread)
-        thread.start()
+Examples of BAD responses:
+"I think the pages should be..." (no explanations)
+"home, about" (must be capitalized)
+"Contact, About, Home" (Home must be first)
 
-    # Wait for all threads to finish
-    for thread in threads:
-        thread.join()
+For reference, common page types:
+- Home (always include)
+- About
+- Services
+- Products
+- Portfolio
+- Gallery
+- Blog
+- Contact
+- Shop
+- Team
+- Pricing
+- FAQ
 
-    generated_pages = []
-    while not result_queue.empty():
-        generated_pages.append(result_queue.get())
-    
-    # Update HTML files with custom navbar
-    update_html_with_navbar(folder_name, generated_pages)
+Return ONLY the required page names for this {original_prompt} website, separated by commas:"""
 
-    update_navbar_links(folder_name, generated_pages)
+        # Get pages first
+        client = Client()
+        pages_response = client.chat.completions.create(
+            model="claude-3.5-sonnet",
+            messages=[{"role": "user", "content": pages_prompt}]
+        )
+        
+        pages = [
+            page.strip().strip('"\'').capitalize() 
+            for page in pages_response.choices[0].message.content.strip().split(',')
+            if page.strip() and all(ord(char) < 128 for char in page.strip())
+        ]
+        
+        # Format base_prompt with available pages
+        formatted_base_prompt = base_prompt.format(
+            page_name="{page_name}",  # This will be formatted later for each page
+            pages=", ".join(pages)
+        )
+        
+        # Set total pages (including navbar update)
+        total_pages = len(pages) + 1
+        
+        # Generate pages
+        threads = []
+        for page in pages:
+            thread = threading.Thread(
+                target=generate_page,
+                args=(page, original_prompt, formatted_base_prompt, folder_name, result_queue)
+            )
+            threads.append(thread)
+            thread.start()
 
-    
-    return jsonify({"folder": folder_name, "pages": generated_pages})
+        # Wait for all threads
+        for thread in threads:
+            thread.join()
+
+        # Collect results
+        while not result_queue.empty():
+            result = result_queue.get()
+            generated_pages.append(result)
+            
+        # Update navbar (counts as final step)
+        update_html_with_navbar(folder_name, generated_pages)
+        update_navbar_links(folder_name, generated_pages)
+        
+        return jsonify({"folder": folder_name, "pages": generated_pages})
+        
+    except Exception as e:
+        app.logger.error(f"An error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # Route to serve generated files
 @app.route('/view/<folder>/<path:filename>')
 def view(folder, filename):
     return send_from_directory(os.path.join('generated_folders', folder), filename)
+
+# Add progress tracking
+@app.route('/progress')
+def progress():
+    def generate():
+        global generated_pages, total_pages
+        
+        while True:
+            try:
+                # Calculate progress including navbar update
+                completed = len(generated_pages)
+                current_progress = int((completed / total_pages) * 100) if total_pages > 0 else 0
+                
+                data = {"progress": current_progress}
+                yield f"data: {json.dumps(data)}\n\n"
+                
+                if current_progress >= 100:
+                    break
+                    
+                time.sleep(0.5)
+                
+            except Exception as e:
+                app.logger.error(f"Progress error: {str(e)}")
+                break
+    
+    return Response(generate(), mimetype='text/event-stream')
+
+# After other global variables, before routes
+pages = []
+result_queue = queue.Queue()
+generated_pages = []
+total_pages = 0
+
+# Define base_prompt before the routes
+base_prompt = '''Generate a cutting-edge, visually stunning web page for a {page_name} that follows modern design trends and best practices. The page should create an immediate "wow" factor and maintain high usability.
+
+Available Pages for Navigation: {pages}
+
+Logo and Branding:
+- Use a relevant logo image from:
+  * Unsplash: https://source.unsplash.com/random/[width]x[height]?logo
+  * Picsum: https://picsum.photos/[width]/[height]?random=1
+  * Lorem Picsum: https://picsum.photos/seed/logo/[width]/[height]
+- Logo dimensions should be appropriate for header placement
+- Include logo in navigation/header area
+- Ensure logo is responsive
+- Add subtle hover effects on logo
+
+Visual Design Requirements:
+- Implement a modern, cohesive color scheme that evokes the right emotions
+- Use sophisticated gradient combinations and subtle patterns
+- Include micro-interactions and smooth animations
+- Utilize glass-morphism and neumorphic design elements
+- Add parallax scrolling effects
+- Implement skeleton loading states
+- Create engaging section transitions
+- Use modern card designs with hover effects
+
+[... rest of your existing prompt content ...]'''
 
 if __name__ == "__main__":
     app.run(debug=False)

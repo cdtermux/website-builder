@@ -11,6 +11,10 @@ document.body.appendChild(viewPageBtn);
 
 let currentFolderName = '';
 
+const progressContainer = document.querySelector('.progress-container');
+const progressBar = document.querySelector('.progress');
+const progressText = document.getElementById('progress-text');
+
 generateBtn.addEventListener('click', async () => {
   const prompt = promptInput.value.trim();
   if (!prompt) {
@@ -19,6 +23,10 @@ generateBtn.addEventListener('click', async () => {
   }
 
   try {
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+
     const response = await fetch('http://127.0.0.1:5000/generate', {
       method: 'POST',
       headers: {
@@ -27,6 +35,22 @@ generateBtn.addEventListener('click', async () => {
       body: JSON.stringify({ prompt })
     });
 
+    const eventSource = new EventSource('http://127.0.0.1:5000/progress');
+    
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const progress = data.progress;
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${progress}%`;
+      
+      if (progress === 100) {
+        eventSource.close();
+        setTimeout(() => {
+          progressContainer.style.display = 'none';
+        }, 1000);
+      }
+    };
+
     const data = await response.json();
     htmlCodeOutput.textContent = data.html;
     cssCodeOutput.textContent = data.css;
@@ -34,6 +58,7 @@ generateBtn.addEventListener('click', async () => {
   } catch (error) {
     console.error('Error:', error);
     alert('An error occurred while generating the code.');
+    progressContainer.style.display = 'none';
   }
 });
 
