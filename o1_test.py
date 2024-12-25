@@ -2,7 +2,7 @@ from g4f.client import Client
 
 client = Client()
 response = client.chat.completions.create(
-    model="gpt-4o",
+    model="claude-3.5-sonnet",
     messages=[{"role": "user", "content": "Hello"}],
     # Add any other necessary parameters
 )
