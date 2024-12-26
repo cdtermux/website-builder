@@ -107,6 +107,29 @@ def create_files(code_sections, folder_name, page_name):
     with open(os.path.join(folder_path, file_name), 'w', encoding='utf-8') as html_file:
         html_content = code_sections["html"]
         
+        # Add Tailwind CSS CDN if not present
+        tailwind_cdn = '<script src="https://cdn.tailwindcss.com"></script>'
+        if '<head>' in html_content and tailwind_cdn not in html_content:
+            html_content = html_content.replace(
+                '<head>',
+                f'<head>\n    {tailwind_cdn}'
+            )
+        elif '</title>' in html_content and tailwind_cdn not in html_content:
+            html_content = html_content.replace(
+                '</title>',
+                f'</title>\n    {tailwind_cdn}'
+            )
+        elif not tailwind_cdn in html_content:
+            # If no head tag exists, add it
+            html_content = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {tailwind_cdn}
+    <title>{page_name}</title>
+'''     + html_content
+        
         head_tag_index = html_content.find('</head>')
         if head_tag_index != -1:
             # Link specific page styles and global styles
@@ -269,6 +292,14 @@ def update_html_with_navbar(folder_name, pages):
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
         
+        # Add Tailwind CSS CDN if not present
+        tailwind_cdn = '<script src="https://cdn.tailwindcss.com"></script>'
+        if tailwind_cdn not in content:
+            if '<head>' in content:
+                content = content.replace('<head>', f'<head>\n    {tailwind_cdn}')
+            elif '</title>' in content:
+                content = content.replace('</title>', f'</title>\n    {tailwind_cdn}')
+        
         # Remove any existing navigation elements
         content = re.sub(r'<nav\b[^>]*>.*?</nav>', '', content, flags=re.DOTALL)
         
@@ -358,33 +389,38 @@ def generate():
         folder_name = generate_random_folder_name()
         result_queue = queue.Queue()
 
-        # Updated pages prompt for better page name generation
-        pages_prompt = f"""Based on this website requirement, determine essential pages needed:
+        # Updated pages prompt with strict English-only rules
+        pages_prompt = f"""STRICT RULES FOR PAGE GENERATION:
+1. RESPOND ONLY IN ENGLISH
+2. NO CHINESE CHARACTERS ALLOWED
+3. NO EXPLANATIONS OR APOLOGIES
+4. RETURN ONLY PAGE NAMES
+5. USE ONLY ASCII CHARACTERS
 
-Website requirement: {original_prompt}
+Based on this website requirement: {original_prompt}
 
-STRICT RESPONSE RULES:
-1. Return ONLY a comma-separated list of page names
-2. ALWAYS start with "Home"
-3. Use clear, descriptive page names
-4. NO explanations or additional text
-5. NO apologies or Chinese characters
-6. Maximum 8 pages total
-7. Each page name should be capitalized
-8. Use standard page names (e.g., Home, About, Services)
+FORMAT RULES:
+1. Return ONLY comma-separated page names
+2. "Home" MUST be the first page
+3. Each page name must be Capitalized
+4. Maximum 8 pages total
+5. Use standard website page names
+6. NO special characters except commas
+7. NO numbers in page names
 
-Examples of GOOD responses:
-"Home, About, Services, Portfolio, Contact"
-"Home, Products, Gallery, Contact"
-"Home, Menu, Reservations, About"
+VALID EXAMPLES:
+"Home, About, Services, Contact"
+"Home, Products, Gallery, Blog"
+"Home, Portfolio, Team, Contact"
 
-Examples of BAD responses:
-"I think the pages should be..." (no explanations)
-"home, about" (must be capitalized)
-"Contact, About, Home" (Home must be first)
+INVALID EXAMPLES:
+"主页, About" (NO Chinese characters)
+"home, about" (must be Capitalized)
+"I suggest..." (NO explanations)
+"Contact-Us" (NO special characters)
 
-For reference, common page types:
-- Home (always include)
+COMMON PAGE NAMES TO USE:
+- Home (required, must be first)
 - About
 - Services
 - Products
@@ -392,34 +428,61 @@ For reference, common page types:
 - Gallery
 - Blog
 - Contact
-- Shop
 - Team
 - Pricing
 - FAQ
 
-Return ONLY the required page names for this {original_prompt} website, separated by commas:"""
+Return ONLY the comma-separated page names:"""
 
-        # Get pages first
+        # Add validation after getting the response
+        def validate_page_names(pages_raw):
+            # Check for Chinese characters
+            if any('\u4e00' <= char <= '\u9fff' for char in pages_raw):
+                raise ValueError("Response contains Chinese characters")
+            
+            # Clean and validate page names
+            pages = [
+                page.strip().strip('"\'').capitalize() 
+                for page in pages_raw.split(',')
+                if page.strip() and all(ord(char) < 128 for char in page.strip())
+            ]
+            
+            # Ensure Home is first
+            if "Home" not in pages:
+                pages.insert(0, "Home")
+            elif pages[0] != "Home":
+                pages.remove("Home")
+                pages.insert(0, "Home")
+            
+            return pages
+
+        # Get pages with validation
         client = Client()
         pages_response = client.chat.completions.create(
             model="claude-3.5-sonnet",
-            messages=[{"role": "user", "content": pages_prompt}]
+            messages=[{
+                "role": "user", 
+                "content": pages_prompt + "\n\nIMPORTANT: RESPOND ONLY IN ENGLISH WITH COMMA-SEPARATED PAGE NAMES."
+            }]
         )
         
-        pages = [
-            page.strip().strip('"\'').capitalize() 
-            for page in pages_response.choices[0].message.content.strip().split(',')
-            if page.strip() and all(ord(char) < 128 for char in page.strip())
-        ]
+        try:
+            pages = validate_page_names(pages_response.choices[0].message.content.strip())
+        except ValueError as e:
+            # If validation fails, use default pages
+            app.logger.warning(f"Page validation failed: {str(e)}. Using default pages.")
+            pages = ["Home", "About", "Services", "Contact"]
+        
+        # Set total pages (including navbar update)
+        total_pages = len(pages) + 1
+        
+        app.logger.info(f"Generated pages: {pages}")
         
         # Format base_prompt with available pages
         formatted_base_prompt = base_prompt.format(
             page_name="{page_name}",  # This will be formatted later for each page
             pages=", ".join(pages)
         )
-        
-        # Set total pages (including navbar update)
-        total_pages = len(pages) + 1
         
         # Generate pages
         threads = []
